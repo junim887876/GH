@@ -2,18 +2,24 @@
 <html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Secreta Barber | Agendamento Online</title>
 
     <!-- ===================================================================== -->
-    <!-- CONFIGURAÇÕES INICIAIS (PREENCHA OS 2 CAMPOS ABAIXO ANTES DE SUBIR)   -->
+    <!-- CONFIGURAÇÕES INICIAIS (PREENCHA OS CAMPOS ABAIXO ANTES DE HOSPEDAR)  -->
     <!-- ===================================================================== -->
     <script>
         // 1. Cole aqui a URL do seu Google Apps Script (terminada em /exec)
         const GOOGLE_SCRIPT_URL = "COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT_TERMINADA_EM_EXEC";
 
-        // 2. Coloque aqui o WhatsApp do Barbeiro (55 + DDD + Número, apenas dígitos)
+        // 2. WhatsApp do Barbeiro para tirar dúvidas (55 + DDD + Número, só números)
         const BARBER_WHATSAPP = "5562999999999";
+
+        // 3. Link do GPS / Google Maps da Barbearia
+        const BARBER_GPS_URL = "https://maps.google.com/?q=Goianesia+GO";
+
+        // 4. Endereço escrito da Barbearia (aparece no aviso/rodapé)
+        const BARBER_ADDRESS = "Rua Exemplo, Nº 123 - Centro";
     </script>
 
     <!-- Tailwind CSS -->
@@ -50,15 +56,16 @@
             box-sizing: border-box;
         }
         html, body {
-            max-width: 100%;
+            width: 100%;
+            max-width: 100vw;
             overflow-x: hidden;
             background-color: #09090B;
             color: #F4F4F5;
             -webkit-tap-highlight-color: transparent;
         }
         ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
+            width: 4px;
+            height: 4px;
         }
         ::-webkit-scrollbar-track {
             background: #121215;
@@ -84,17 +91,17 @@
 <body class="min-h-screen w-full flex flex-col selection:bg-amber-500 selection:text-black">
 
     <!-- AVISO FLUTUANTE NO TOPO -->
-    <div id="app-push-banner" class="fixed top-3 left-0 right-0 mx-auto z-50 w-[94%] max-w-md transform -translate-y-40 opacity-0 transition-all duration-500 pointer-events-none">
+    <div id="app-push-banner" class="fixed top-3 left-0 right-0 mx-auto z-50 w-[92%] max-w-md transform -translate-y-40 opacity-0 transition-all duration-500 pointer-events-none">
         <div class="bg-obsidian-800/95 backdrop-blur-md border border-amber-500/60 rounded-2xl p-3.5 shadow-2xl flex items-start gap-3 pointer-events-auto">
             <div class="relative w-9 h-9 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 animate-ring">
                 <i data-lucide="bell-ring" class="w-4 h-4"></i>
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 truncate">Secreta Barber</span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Secreta Barber</span>
                     <span class="text-[10px] text-zinc-400 shrink-0">Agora</span>
                 </div>
-                <p id="push-banner-title" class="text-xs sm:text-sm font-semibold text-white truncate mt-0.5">Aviso</p>
+                <p id="push-banner-title" class="text-xs sm:text-sm font-semibold text-white mt-0.5 break-words">Aviso</p>
                 <p id="push-banner-desc" class="text-xs text-zinc-300 mt-0.5 break-words">Detalhes...</p>
             </div>
             <button type="button" onclick="hidePushBanner()" class="text-zinc-400 hover:text-white p-1 shrink-0">
@@ -105,7 +112,7 @@
 
     <!-- CABEÇALHO PRINCIPAL -->
     <header class="sticky top-0 z-40 w-full bg-obsidian-950/95 backdrop-blur-md border-b border-zinc-800/80">
-        <div class="w-full max-w-2xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
+        <div class="w-full max-w-xl mx-auto px-3.5 py-3 flex items-center justify-between gap-2">
             <!-- Marca -->
             <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-black font-extrabold shadow shrink-0">
@@ -117,18 +124,18 @@
                     </h1>
                     <p class="text-[11px] text-zinc-400 flex items-center gap-1.5 truncate">
                         <span id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block shrink-0 animate-pulse"></span>
-                        <span id="sync-status-text" class="truncate">Conectando à agenda...</span>
+                        <span id="sync-status-text" class="truncate">Conectando...</span>
                     </p>
                 </div>
             </div>
 
-            <!-- Identificação do Cliente Logado (Aparece após preencher nome/celular) -->
-            <div id="header-user-pill" class="hidden items-center gap-2 bg-obsidian-900 border border-zinc-800 px-3 py-1.5 rounded-xl shrink-0">
-                <div class="text-right min-w-0 max-w-[130px] sm:max-w-[180px]">
+            <!-- Identificação do Cliente Logado -->
+            <div id="header-user-pill" class="hidden items-center gap-2 bg-obsidian-900 border border-zinc-800 px-2.5 py-1.5 rounded-xl shrink-0">
+                <div class="text-right min-w-0 max-w-[115px] sm:max-w-[160px]">
                     <p id="header-user-name" class="text-xs font-bold text-white truncate">Cliente</p>
                     <p id="header-user-phone" class="text-[10px] text-zinc-400 truncate">(00) 00000-0000</p>
                 </div>
-                <button type="button" onclick="openLoginGate()" class="px-2 py-1 rounded-lg bg-obsidian-800 hover:bg-obsidian-700 text-[11px] font-semibold text-amber-400 transition shrink-0" title="Editar seus dados">
+                <button type="button" onclick="openLoginGate()" class="px-2 py-1 rounded-lg bg-obsidian-800 hover:bg-obsidian-700 text-[11px] font-semibold text-amber-400 transition shrink-0">
                     Alterar
                 </button>
             </div>
@@ -136,20 +143,20 @@
     </header>
 
     <!-- CONTEÚDO PRINCIPAL -->
-    <main class="flex-1 w-full max-w-2xl mx-auto px-3 sm:px-4 py-5">
+    <main class="flex-1 w-full max-w-xl mx-auto px-3.5 py-5">
 
         <!-- ========================================================= -->
         <!-- ETAPA 0: IDENTIFICAÇÃO INICIAL DO CLIENTE (LOCALSTORAGE)  -->
         <!-- ========================================================= -->
-        <section id="client-login-gate" class="w-full max-w-md mx-auto py-4 sm:py-8">
-            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5">
+        <section id="client-login-gate" class="w-full max-w-md mx-auto py-3 sm:py-6">
+            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-5 shadow-2xl space-y-5">
                 <div class="text-center space-y-2">
                     <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
                         <i data-lucide="user-check" class="w-6 h-6"></i>
                     </div>
                     <h2 class="text-lg sm:text-xl font-bold text-white">Bem-vindo à Secreta Barber</h2>
                     <p class="text-xs text-zinc-400 leading-relaxed">
-                        Informe seu nome e WhatsApp para liberar os dias e horários disponíveis. Seus dados ficam salvos apenas neste celular.
+                        Informe seu nome e WhatsApp para ver os dias e horários disponíveis. Seus dados ficam salvos apenas neste celular.
                     </p>
                 </div>
 
@@ -157,16 +164,16 @@
                     <div>
                         <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Seu Nome ou Apelido *</label>
                         <input type="text" id="gate-client-name" required minlength="2" placeholder="Ex: João Silva"
-                            class="w-full px-4 py-3 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
+                            class="w-full px-4 py-3 rounded-xl bg-obsidian-950 border border-zinc-800 text-base sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Seu WhatsApp (com DDD) *</label>
                         <input type="tel" id="gate-client-phone" required minlength="14" placeholder="Ex: (62) 99999-9999" oninput="maskPhoneInput(this)"
-                            class="w-full px-4 py-3 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
+                            class="w-full px-4 py-3 rounded-xl bg-obsidian-950 border border-zinc-800 text-base sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
                     </div>
 
-                    <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition cursor-pointer">
+                    <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-black font-extrabold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition cursor-pointer">
                         <span>Ver Dias e Horários</span>
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </button>
@@ -175,39 +182,67 @@
                         Apagar dados salvos deste aparelho
                     </button>
                 </form>
+
+                <!-- Botões rápidos de WhatsApp e GPS também disponíveis na entrada -->
+                <div class="pt-3 border-t border-zinc-800/80 grid grid-cols-2 gap-2.5">
+                    <a id="gate-whatsapp-btn" href="#" target="_blank" rel="noopener noreferrer"
+                        class="py-2.5 px-3 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-400 font-semibold text-xs flex items-center justify-center gap-1.5 transition">
+                        <i data-lucide="message-circle" class="w-4 h-4 shrink-0"></i>
+                        <span>Tirar Dúvidas</span>
+                    </a>
+                    <a id="gate-gps-btn" href="#" target="_blank" rel="noopener noreferrer"
+                        class="py-2.5 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-400 font-semibold text-xs flex items-center justify-center gap-1.5 transition">
+                        <i data-lucide="map-pin" class="w-4 h-4 shrink-0"></i>
+                        <span>Localização GPS</span>
+                    </a>
+                </div>
             </div>
         </section>
 
         <!-- ========================================================= -->
         <!-- ETAPA 1: ÁREA DO CLIENTE (LIBERADA APÓS IDENTIFICAÇÃO)    -->
         <!-- ========================================================= -->
-        <section id="client-booking-area" class="hidden space-y-6 w-full">
+        <section id="client-booking-area" class="hidden space-y-5 w-full">
 
-            <!-- Banner Boas-vindas -->
-            <div class="bg-gradient-to-r from-obsidian-900 via-obsidian-800 to-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div class="w-full sm:w-auto">
-                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-1.5">
+            <!-- Card Boas-vindas + Endereço -->
+            <div class="bg-gradient-to-br from-obsidian-900 via-obsidian-800/90 to-obsidian-900 border border-zinc-800 rounded-2xl p-4 space-y-3.5">
+                <div class="space-y-1">
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                         Atendimento Individual • Sem Fila
                     </span>
-                    <h2 class="text-lg sm:text-xl font-bold text-white leading-snug">
+                    <h2 class="text-lg sm:text-xl font-bold text-white leading-snug break-words">
                         Fala, <span id="welcome-client-name" class="text-amber-400">Cliente</span>!
                     </h2>
-                    <p class="text-xs text-zinc-400 mt-1">Escolha um corte de referência abaixo ou vá direto para os dias e horários.</p>
+                    <p id="barber-address-label" class="text-xs text-zinc-400 flex items-center gap-1.5 break-words">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                        <span>Endereço da Barbearia</span>
+                    </p>
                 </div>
-                <a href="#booking-form" class="w-full sm:w-auto text-center px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0">
-                    Escolher Horário
-                </a>
+
+                <!-- BOTÕES SEPARADOS: WHATSAPP PARA DÚVIDAS + GPS LOCALIZAÇÃO -->
+                <div class="grid grid-cols-2 gap-2.5 pt-1">
+                    <a id="client-whatsapp-help-btn" href="#" target="_blank" rel="noopener noreferrer"
+                        class="py-3 px-3 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 active:scale-[0.99] border border-emerald-500/40 text-emerald-400 font-bold text-xs flex items-center justify-center gap-2 transition text-center">
+                        <i data-lucide="message-circle" class="w-4 h-4 shrink-0"></i>
+                        <span>Tirar Dúvidas</span>
+                    </a>
+                    <a id="client-gps-location-btn" href="#" target="_blank" rel="noopener noreferrer"
+                        class="py-3 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 active:scale-[0.99] border border-sky-500/40 text-sky-400 font-bold text-xs flex items-center justify-center gap-2 transition text-center">
+                        <i data-lucide="navigation" class="w-4 h-4 shrink-0"></i>
+                        <span>Abrir no GPS</span>
+                    </a>
+                </div>
             </div>
 
             <!-- VITRINE DE CORTES (FOTOS E VÍDEOS) -->
             <div class="space-y-3 w-full">
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                    <div>
+                    <div class="min-w-0">
                         <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
                             <i data-lucide="camera" class="w-4 h-4 text-amber-400 shrink-0"></i>
                             <span>Fotos & Vídeos de Cortes</span>
                         </h3>
-                        <p class="text-xs text-zinc-400">Toque em um modelo para escolher como referência.</p>
+                        <p class="text-xs text-zinc-400">Toque em um modelo para usar como referência.</p>
                     </div>
                     <!-- Filtro de mídia -->
                     <div class="flex bg-obsidian-900 p-1 rounded-xl border border-zinc-800 text-xs shrink-0">
@@ -218,17 +253,17 @@
                 </div>
 
                 <!-- Grid de Mídia -->
-                <div id="portfolio-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full">
+                <div id="portfolio-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 w-full">
                     <!-- Renderizado via JS -->
                 </div>
             </div>
 
-            <!-- FORMULÁRIO DE AGENDAMENTO -->
-            <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-5 shadow-xl w-full">
+            <!-- FORMULÁRIO DE AGENDAMENTO DIRETO NA PLANILHA -->
+            <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 space-y-5 shadow-xl w-full">
                 <div class="border-b border-zinc-800 pb-3.5 flex flex-wrap items-center justify-between gap-2">
                     <div>
                         <h3 class="text-base sm:text-lg font-bold text-white">Agendar Horário</h3>
-                        <p class="text-xs text-zinc-400">Selecione o serviço, dia e horário desejado.</p>
+                        <p class="text-xs text-zinc-400">Escolha o serviço, dia e horário desejado.</p>
                     </div>
                     <span id="selected-style-badge" class="hidden px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-medium flex items-center gap-1.5 max-w-full">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5 shrink-0"></i>
@@ -259,7 +294,7 @@
 
                 <!-- PASSO 3: HORÁRIO DISPONÍVEL -->
                 <div class="space-y-2.5">
-                    <div class="flex items-center justify-between gap-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
                         <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
                             3. Horários Disponíveis
                         </label>
@@ -285,18 +320,18 @@
                         4. Observação do Corte (Opcional)
                     </label>
                     <input type="text" id="client-notes" placeholder="Ex: Degradê navalhado na zero, acabamento quadrado..."
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
+                        class="w-full px-3.5 py-3 rounded-xl bg-obsidian-950 border border-zinc-800 text-base sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
                 </div>
 
-                <!-- RESUMO E BOTÃO FINAL -->
+                <!-- RESUMO E BOTÃO FINAL (ENVIA DIRETO PARA A PLANILHA GOOGLE) -->
                 <div class="bg-obsidian-950 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-3">
                     <div>
                         <p class="text-[11px] text-zinc-400">Resumo do Agendamento:</p>
-                        <p id="booking-summary-text" class="text-xs sm:text-sm font-semibold text-white mt-0.5 break-words">Selecione serviço, dia e horário</p>
+                        <p id="booking-summary-text" class="text-xs sm:text-sm font-semibold text-white mt-0.5 leading-relaxed break-words">Selecione serviço, dia e horário</p>
                     </div>
-                    <button type="submit" id="submit-booking-btn" class="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition cursor-pointer">
-                        <i data-lucide="message-circle" class="w-5 h-5 shrink-0"></i>
-                        <span id="submit-booking-text">Confirmar & Enviar WhatsApp</span>
+                    <button type="submit" id="submit-booking-btn" class="w-full py-3.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed text-black font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition cursor-pointer">
+                        <i data-lucide="calendar-check" class="w-5 h-5 shrink-0"></i>
+                        <span id="submit-booking-text">Confirmar Agendamento</span>
                     </button>
                 </div>
             </form>
@@ -317,34 +352,38 @@
             </div>
             <div class="p-3.5 flex items-center justify-between gap-2 bg-obsidian-900">
                 <span class="text-xs text-zinc-400">Gostou desse corte?</span>
-                <button type="button" id="modal-select-cut-btn" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition shrink-0">
+                <button type="button" id="modal-select-cut-btn" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition shrink-0">
                     Escolher Este Corte
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO DE AGENDAMENTO + WHATSAPP -->
+    <!-- MODAL DE CONFIRMAÇÃO DE AGENDAMENTO NA PLANILHA -->
     <div id="success-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-3">
         <div class="bg-obsidian-900 border border-emerald-500/40 rounded-2xl w-full max-w-md p-5 text-center space-y-4 shadow-2xl">
             <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
                 <i data-lucide="check-circle-2" class="w-7 h-7"></i>
             </div>
-            <h3 class="text-lg font-bold text-white">Horário Reservado!</h3>
-            <p class="text-xs text-zinc-300 leading-relaxed">
-                Seu horário já foi gravado na agenda do barbeiro. Clique abaixo para enviar a confirmação no <strong>WhatsApp</strong> dele.
-            </p>
-            <div id="success-details-box" class="bg-obsidian-950 border border-zinc-800 rounded-xl p-3 text-left text-xs text-zinc-300 space-y-1 break-words">
+            <div class="space-y-1">
+                <h3 class="text-lg font-bold text-white">Horário Marcado!</h3>
+                <p class="text-xs text-zinc-300 leading-relaxed">
+                    Sua reserva já está confirmada e registrada na agenda da barbearia.
+                </p>
+            </div>
+            <div id="success-details-box" class="bg-obsidian-950 border border-zinc-800 rounded-xl p-3.5 text-left text-xs text-zinc-300 space-y-1.5 break-words">
                 <!-- Detalhes preenchidos via JS -->
             </div>
-            <div class="flex flex-col gap-2 pt-1">
-                <a id="whatsapp-direct-link" href="#" target="_blank" rel="noopener noreferrer"
-                    class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition">
-                    <i data-lucide="send" class="w-4 h-4"></i>
-                    <span>Enviar no WhatsApp Agora</span>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <a id="modal-gps-link" href="#" target="_blank" rel="noopener noreferrer"
+                    class="py-3 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-400 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="navigation" class="w-4 h-4 shrink-0"></i>
+                    <span>Ver no GPS</span>
                 </a>
-                <button type="button" onclick="closeSuccessModal()" class="w-full py-2 rounded-xl text-xs text-zinc-400 hover:text-white transition">
-                    Fechar
+                <button type="button" onclick="closeSuccessModal()"
+                    class="py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="check" class="w-4 h-4 shrink-0"></i>
+                    <span>Concluir</span>
                 </button>
             </div>
         </div>
@@ -416,6 +455,7 @@
         // 2. INICIALIZAÇÃO AO CARREGAR A PÁGINA
         // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
+            setupContactAndGpsLinks();
             generateNextDays();
             renderServices();
             renderTimes();
@@ -440,6 +480,24 @@
 
             if (window.lucide) lucide.createIcons();
         });
+
+        function setupContactAndGpsLinks() {
+            const cleanWa = String(BARBER_WHATSAPP || '').replace(/\D/g, '');
+            const helpMsg = encodeURIComponent('Olá! Vim pelo site da Secreta Barber e gostaria de tirar uma dúvida.');
+            const waUrl = `https://wa.me/${cleanWa}?text=${helpMsg}`;
+            const gpsUrl = BARBER_GPS_URL || '#';
+
+            document.getElementById('gate-whatsapp-btn').href = waUrl;
+            document.getElementById('gate-gps-btn').href = gpsUrl;
+            document.getElementById('client-whatsapp-help-btn').href = waUrl;
+            document.getElementById('client-gps-location-btn').href = gpsUrl;
+            document.getElementById('modal-gps-link').href = gpsUrl;
+
+            const addrLabel = document.getElementById('barber-address-label');
+            if (addrLabel && typeof BARBER_ADDRESS === 'string' && BARBER_ADDRESS.trim()) {
+                addrLabel.querySelector('span').textContent = BARBER_ADDRESS;
+            }
+        }
 
         // ==========================================
         // 3. IDENTIFICAÇÃO E LOCALSTORAGE DO CLIENTE
@@ -565,7 +623,7 @@
         async function syncWithGoogleSheets(manualNotify = false) {
             if (!isScriptConfigured()) return;
 
-            setSyncStatus('loading', 'Atualizando horários...');
+            setSyncStatus('loading', 'Atualizando...');
             try {
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`);
                 const data = await response.json();
@@ -584,26 +642,26 @@
                     }
 
                     renderTimes();
-                    setSyncStatus('ok', 'Horários Atualizados');
+                    setSyncStatus('ok', 'Agenda Atualizada');
 
                     if (manualNotify) {
-                        showPushBanner('Agenda Atualizada', 'Lista de horários sincronizada em tempo real.');
+                        showPushBanner('Agenda Atualizada', 'Horários sincronizados com a planilha.');
                     }
                 } else {
-                    setSyncStatus('error', 'Erro ao carregar agenda');
+                    setSyncStatus('error', 'Erro na agenda');
                 }
             } catch (err) {
-                setSyncStatus('error', 'Sem conexão com a agenda');
+                setSyncStatus('error', 'Sem conexão');
             }
         }
 
         async function postToGoogleSheets(payload) {
             if (!isScriptConfigured()) {
-                showPushBanner('Agenda Offline', 'O sistema ainda não foi conectado à planilha.');
+                showPushBanner('Agenda Offline', 'Cole a URL do Google Apps Script no topo do HTML.');
                 return { status: 'error' };
             }
 
-            setSyncStatus('loading', 'Confirmando reserva...');
+            setSyncStatus('loading', 'Salvando reserva...');
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -725,8 +783,8 @@
                 return `
                     <div onclick="selectService('${srv.id}')" class="p-3 rounded-xl border cursor-pointer transition flex items-center justify-between gap-2 ${active ? 'bg-amber-500/10 border-amber-500 text-white' : 'bg-obsidian-950 border-zinc-800 text-zinc-300 hover:border-zinc-700'}">
                         <div class="min-w-0">
-                            <p class="text-xs sm:text-sm font-bold truncate ${active ? 'text-amber-400' : 'text-white'}">${srv.name}</p>
-                            <p class="text-[11px] text-zinc-400 mt-0.5 truncate">${srv.desc} • ${srv.duration}</p>
+                            <p class="text-xs sm:text-sm font-bold break-words ${active ? 'text-amber-400' : 'text-white'}">${srv.name}</p>
+                            <p class="text-[11px] text-zinc-400 mt-0.5 break-words">${srv.desc} • ${srv.duration}</p>
                         </div>
                         <span class="text-xs font-extrabold px-2.5 py-1 rounded-lg ${active ? 'bg-amber-500 text-black' : 'bg-obsidian-800 text-zinc-200'} shrink-0">
                             ${srv.price}
@@ -763,7 +821,7 @@
                 const isSelected = selectedDate && selectedDate.iso === iso;
                 html += `
                     <button type="button" onclick="selectDate('${iso}', '${dayNum}/${monthName} (${labelDay})')"
-                        class="min-w-[68px] py-2 px-2.5 rounded-xl border text-center transition shrink-0 ${isSelected ? 'bg-amber-500 border-amber-500 text-black font-bold' : 'bg-obsidian-950 border-zinc-800 text-zinc-300 hover:border-zinc-700'}">
+                        class="min-w-[66px] py-2 px-2 rounded-xl border text-center transition shrink-0 ${isSelected ? 'bg-amber-500 border-amber-500 text-black font-bold' : 'bg-obsidian-950 border-zinc-800 text-zinc-300 hover:border-zinc-700'}">
                         <span class="block text-[10px] uppercase ${isSelected ? 'text-black/80' : 'text-zinc-500'}">${labelDay}</span>
                         <span class="block text-sm font-extrabold mt-0.5">${dayNum}</span>
                         <span class="block text-[10px] ${isSelected ? 'text-black/80' : 'text-zinc-500'}">${monthName}</span>
@@ -840,7 +898,7 @@
         }
 
         // ==========================================
-        // 7. ENVIO DO AGENDAMENTO + WHATSAPP
+        // 7. ENVIO DIRETO DO AGENDAMENTO PARA A PLANILHA GOOGLE
         // ==========================================
         async function handleBookingSubmit(e) {
             e.preventDefault();
@@ -860,7 +918,7 @@
             const submitBtn = document.getElementById('submit-booking-btn');
             const submitText = document.getElementById('submit-booking-text');
             submitBtn.disabled = true;
-            submitText.textContent = 'Reservando horário...';
+            submitText.textContent = 'Gravando na agenda...';
 
             const newBooking = {
                 id: 'bk_' + Date.now(),
@@ -882,7 +940,7 @@
             });
 
             submitBtn.disabled = false;
-            submitText.textContent = 'Confirmar & Enviar WhatsApp';
+            submitText.textContent = 'Confirmar Agendamento';
 
             if (res.status === 'conflict') {
                 showPushBanner('Horário Ocupado', res.message || 'Outro cliente acabou de reservar esse horário.');
@@ -897,35 +955,23 @@
                 return;
             }
 
+            // Marca imediatamente o horário como ocupado na tela e atualiza status
             bookings.unshift(newBooking);
-            setSyncStatus('ok', 'Horário Reservado');
-
-            const waText =
-                `*SECRETA BARBER - NOVO AGENDAMENTO*%0A` +
-                `----------------------------------%0A` +
-                `*Cliente:* ${encodeURIComponent(newBooking.clientName)}%0A` +
-                `*WhatsApp:* ${encodeURIComponent(newBooking.clientPhone)}%0A` +
-                `*Serviço:* ${encodeURIComponent(newBooking.serviceName)} (${encodeURIComponent(newBooking.servicePrice)})%0A` +
-                `*Data:* ${encodeURIComponent(newBooking.dateDisplay)}%0A` +
-                `*Horário:* ${encodeURIComponent(newBooking.time)}%0A` +
-                `*Corte Ref.:* ${encodeURIComponent(newBooking.cutStyle)}%0A` +
-                `*Obs:* ${encodeURIComponent(newBooking.notes)}`;
-
-            const cleanBarberNumber = String(BARBER_WHATSAPP).replace(/\D/g, '');
-            const waUrl = `https://wa.me/${cleanBarberNumber}?text=${waText}`;
+            setSyncStatus('ok', 'Agendamento Salvo');
 
             document.getElementById('success-details-box').innerHTML = `
-                <p><strong class="text-white">Cliente:</strong> ${newBooking.clientName} (${newBooking.clientPhone})</p>
+                <p><strong class="text-white">Cliente:</strong> ${newBooking.clientName}</p>
+                <p><strong class="text-white">WhatsApp:</strong> ${newBooking.clientPhone}</p>
                 <p><strong class="text-white">Serviço:</strong> ${newBooking.serviceName} (${newBooking.servicePrice})</p>
-                <p><strong class="text-white">Quando:</strong> ${newBooking.dateDisplay} às ${newBooking.time}</p>
+                <p><strong class="text-white">Data e Hora:</strong> ${newBooking.dateDisplay} às ${newBooking.time}</p>
                 <p><strong class="text-white">Corte Ref.:</strong> ${newBooking.cutStyle}</p>
             `;
-            document.getElementById('whatsapp-direct-link').href = waUrl;
 
             const successModal = document.getElementById('success-modal');
             successModal.classList.remove('hidden');
             successModal.classList.add('flex');
 
+            document.getElementById('client-notes').value = '';
             selectedTime = null;
             renderTimes();
             updateSummary();
