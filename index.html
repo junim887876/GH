@@ -6,11 +6,14 @@
     <title>Secreta Barber | Agendamento Online</title>
 
     <!-- ===================================================================== -->
-    <!-- CONFIGURAÇÃO DA PLANILHA GOOGLE (COLE SUA URL DO APPS SCRIPT ABAIXO)  -->
+    <!-- CONFIGURAÇÕES INICIAIS (PREENCHA OS 2 CAMPOS ABAIXO ANTES DE SUBIR)   -->
     <!-- ===================================================================== -->
     <script>
+        // 1. Cole aqui a URL do seu Google Apps Script (terminada em /exec)
         const GOOGLE_SCRIPT_URL = "COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT_TERMINADA_EM_EXEC";
-        // Exemplo: const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx.../exec";
+
+        // 2. Coloque aqui o WhatsApp do Barbeiro (55 + DDD + Número, apenas dígitos)
+        const BARBER_WHATSAPP = "5562999999999";
     </script>
 
     <!-- Tailwind CSS -->
@@ -21,8 +24,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Tone.js para alerta sonoro de notificação -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
     <script>
         tailwind.config = {
@@ -82,7 +83,7 @@
 </head>
 <body class="min-h-screen w-full flex flex-col selection:bg-amber-500 selection:text-black">
 
-    <!-- NOTIFICAÇÃO INTERNA DO APP (TOPO RESPONSIVO) -->
+    <!-- AVISO FLUTUANTE NO TOPO -->
     <div id="app-push-banner" class="fixed top-3 left-0 right-0 mx-auto z-50 w-[94%] max-w-md transform -translate-y-40 opacity-0 transition-all duration-500 pointer-events-none">
         <div class="bg-obsidian-800/95 backdrop-blur-md border border-amber-500/60 rounded-2xl p-3.5 shadow-2xl flex items-start gap-3 pointer-events-auto">
             <div class="relative w-9 h-9 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 animate-ring">
@@ -90,7 +91,7 @@
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 truncate">Secreta Barber • Alerta</span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 truncate">Secreta Barber</span>
                     <span class="text-[10px] text-zinc-400 shrink-0">Agora</span>
                 </div>
                 <p id="push-banner-title" class="text-xs sm:text-sm font-semibold text-white truncate mt-0.5">Aviso</p>
@@ -102,11 +103,11 @@
         </div>
     </div>
 
-    <!-- CABEÇALHO PRINCIPAL ADAPTADO PARA CELULAR -->
+    <!-- CABEÇALHO PRINCIPAL -->
     <header class="sticky top-0 z-40 w-full bg-obsidian-950/95 backdrop-blur-md border-b border-zinc-800/80">
         <div class="w-full max-w-2xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
             <!-- Marca -->
-            <div class="flex items-center gap-2 min-w-0">
+            <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-black font-extrabold shadow shrink-0">
                     <i data-lucide="scissors" class="w-4 h-4"></i>
                 </div>
@@ -121,38 +122,66 @@
                 </div>
             </div>
 
-            <!-- Botões de Alternância (Cliente / Barbeiro) -->
-            <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" id="btn-mode-client" onclick="switchView('client')" class="px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 text-black transition">
-                    Agendar
-                </button>
-                <button type="button" id="btn-mode-barber" onclick="switchView('barber')" class="relative px-3 py-2 rounded-xl text-xs font-semibold bg-obsidian-800 text-zinc-300 hover:text-white border border-zinc-700/70 transition flex items-center gap-1.5">
-                    <i data-lucide="sliders" class="w-3.5 h-3.5 text-amber-400"></i>
-                    <span>Barbeiro</span>
-                    <span id="unread-badge" class="hidden absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow">0</span>
+            <!-- Identificação do Cliente Logado (Aparece após preencher nome/celular) -->
+            <div id="header-user-pill" class="hidden items-center gap-2 bg-obsidian-900 border border-zinc-800 px-3 py-1.5 rounded-xl shrink-0">
+                <div class="text-right min-w-0 max-w-[130px] sm:max-w-[180px]">
+                    <p id="header-user-name" class="text-xs font-bold text-white truncate">Cliente</p>
+                    <p id="header-user-phone" class="text-[10px] text-zinc-400 truncate">(00) 00000-0000</p>
+                </div>
+                <button type="button" onclick="openLoginGate()" class="px-2 py-1 rounded-lg bg-obsidian-800 hover:bg-obsidian-700 text-[11px] font-semibold text-amber-400 transition shrink-0" title="Editar seus dados">
+                    Alterar
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- ALERTA CASO A URL DO APPS SCRIPT NÃO TENHA SIDO COLADA -->
-    <div id="missing-url-warning" class="hidden w-full max-w-2xl mx-auto px-3 sm:px-4 pt-4">
-        <div class="bg-red-500/10 border border-red-500/40 rounded-2xl p-3.5 text-xs text-red-200 flex items-start gap-2.5">
-            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400 shrink-0 mt-0.5"></i>
-            <div>
-                <p class="font-bold text-red-300">Planilha Google ainda não conectada!</p>
-                <p class="mt-0.5 text-red-200/80">Abra o arquivo <code>index.html</code> e cole a URL do seu Google Apps Script na variável <code>GOOGLE_SCRIPT_URL</code> logo no topo do código.</p>
-            </div>
-        </div>
-    </div>
-
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="flex-1 w-full max-w-2xl mx-auto px-3 sm:px-4 py-5">
 
         <!-- ========================================================= -->
-        <!-- VISÃO 1: CLIENTE (AGENDAMENTO + CATÁLOGO FOTOS & VÍDEOS)  -->
+        <!-- ETAPA 0: IDENTIFICAÇÃO INICIAL DO CLIENTE (LOCALSTORAGE)  -->
         <!-- ========================================================= -->
-        <section id="view-client" class="space-y-6 w-full">
+        <section id="client-login-gate" class="w-full max-w-md mx-auto py-4 sm:py-8">
+            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5">
+                <div class="text-center space-y-2">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
+                        <i data-lucide="user-check" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-lg sm:text-xl font-bold text-white">Bem-vindo à Secreta Barber</h2>
+                    <p class="text-xs text-zinc-400 leading-relaxed">
+                        Informe seu nome e WhatsApp para liberar os dias e horários disponíveis. Seus dados ficam salvos apenas neste celular.
+                    </p>
+                </div>
+
+                <form id="login-gate-form" onsubmit="handleClientLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Seu Nome ou Apelido *</label>
+                        <input type="text" id="gate-client-name" required minlength="2" placeholder="Ex: João Silva"
+                            class="w-full px-4 py-3 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1.5">Seu WhatsApp (com DDD) *</label>
+                        <input type="tel" id="gate-client-phone" required minlength="14" placeholder="Ex: (62) 99999-9999" oninput="maskPhoneInput(this)"
+                            class="w-full px-4 py-3 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition cursor-pointer">
+                        <span>Ver Dias e Horários</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+
+                    <button type="button" id="gate-clear-btn" onclick="clearClientLocalStorage()" class="hidden w-full py-2 text-xs text-zinc-500 hover:text-red-400 transition">
+                        Apagar dados salvos deste aparelho
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- ETAPA 1: ÁREA DO CLIENTE (LIBERADA APÓS IDENTIFICAÇÃO)    -->
+        <!-- ========================================================= -->
+        <section id="client-booking-area" class="hidden space-y-6 w-full">
 
             <!-- Banner Boas-vindas -->
             <div class="bg-gradient-to-r from-obsidian-900 via-obsidian-800 to-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -160,15 +189,17 @@
                     <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-1.5">
                         Atendimento Individual • Sem Fila
                     </span>
-                    <h2 class="text-lg sm:text-xl font-bold text-white leading-snug">Marque seu horário rápido</h2>
-                    <p class="text-xs text-zinc-400 mt-1">Escolha o serviço, selecione um corte de referência e confirme no WhatsApp.</p>
+                    <h2 class="text-lg sm:text-xl font-bold text-white leading-snug">
+                        Fala, <span id="welcome-client-name" class="text-amber-400">Cliente</span>!
+                    </h2>
+                    <p class="text-xs text-zinc-400 mt-1">Escolha um corte de referência abaixo ou vá direto para os dias e horários.</p>
                 </div>
                 <a href="#booking-form" class="w-full sm:w-auto text-center px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0">
-                    Ir para Horários
+                    Escolher Horário
                 </a>
             </div>
 
-            <!-- VITRINE DE CORTES (FOTOS E VÍDEOS DO BARBEIRO) -->
+            <!-- VITRINE DE CORTES (FOTOS E VÍDEOS) -->
             <div class="space-y-3 w-full">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div>
@@ -197,7 +228,7 @@
                 <div class="border-b border-zinc-800 pb-3.5 flex flex-wrap items-center justify-between gap-2">
                     <div>
                         <h3 class="text-base sm:text-lg font-bold text-white">Agendar Horário</h3>
-                        <p class="text-xs text-zinc-400">Preencha os 4 passos abaixo.</p>
+                        <p class="text-xs text-zinc-400">Selecione o serviço, dia e horário desejado.</p>
                     </div>
                     <span id="selected-style-badge" class="hidden px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-medium flex items-center gap-1.5 max-w-full">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5 shrink-0"></i>
@@ -219,7 +250,7 @@
                 <!-- PASSO 2: DATA DO ATENDIMENTO -->
                 <div class="space-y-2.5">
                     <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
-                        2. Escolha o Dia
+                        2. Escolha o Dia da Semana
                     </label>
                     <div id="dates-strip" class="flex gap-2 overflow-x-auto pb-1.5 w-full">
                         <!-- Dias gerados automaticamente via JS -->
@@ -248,33 +279,13 @@
                     </div>
                 </div>
 
-                <!-- PASSO 4: DADOS DO CLIENTE (SALVOS APENAS NO LOCALSTORAGE DO CELULAR DO CLIENTE) -->
-                <div class="space-y-3 pt-3 border-t border-zinc-800/80">
-                    <div class="flex flex-wrap items-center justify-between gap-2">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
-                            4. Seus Dados (Salvos só no seu celular)
-                        </label>
-                        <button type="button" id="clear-client-storage-btn" onclick="clearClientLocalStorage()" class="hidden text-[11px] text-zinc-400 hover:text-red-400 underline transition">
-                            Esquecer meus dados
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs text-zinc-300 mb-1">Seu Nome / Apelido *</label>
-                            <input type="text" id="client-name" required placeholder="Ex: João Silva" oninput="saveClientProfileLocally()"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-zinc-300 mb-1">Seu WhatsApp (com DDD) *</label>
-                            <input type="tel" id="client-phone" required placeholder="Ex: (62) 99999-9999" oninput="maskPhoneInput(this); saveClientProfileLocally()"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-zinc-300 mb-1">Observação do Corte (Opcional)</label>
-                        <input type="text" id="client-notes" placeholder="Ex: Degradê navalhado na zero, acabamento quadrado..."
-                            class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
-                    </div>
+                <!-- PASSO 4: OBSERVAÇÃO OPCIONAL -->
+                <div class="space-y-2 pt-3 border-t border-zinc-800/80">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
+                        4. Observação do Corte (Opcional)
+                    </label>
+                    <input type="text" id="client-notes" placeholder="Ex: Degradê navalhado na zero, acabamento quadrado..."
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
                 </div>
 
                 <!-- RESUMO E BOTÃO FINAL -->
@@ -289,142 +300,6 @@
                     </button>
                 </div>
             </form>
-        </section>
-
-        <!-- ========================================================= -->
-        <!-- VISÃO 2: APP DO BARBEIRO (HORÁRIOS, AGENDA E MÍDIA)        -->
-        <!-- ========================================================= -->
-        <section id="view-barber" class="hidden space-y-5 w-full">
-
-            <!-- Cabeçalho do Painel do Barbeiro -->
-            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400">PAINEL DO BARBEIRO</span>
-                        <h2 class="text-lg font-bold text-white mt-1">Horários & Agenda (Planilha Google)</h2>
-                    </div>
-                    <button type="button" onclick="syncWithGoogleSheets(true)" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold flex items-center gap-1.5 transition shrink-0">
-                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                        <span>Sincronizar Planilha</span>
-                    </button>
-                </div>
-                <p class="text-xs text-zinc-400">Tudo que você adicionar ou remover aqui atualiza na hora a sua Planilha Google e o celular de todos os clientes.</p>
-            </div>
-
-            <!-- NOVO BLOCO: GERENCIAR HORÁRIOS DE ATENDIMENTO NA PLANILHA -->
-            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-4">
-                <div class="border-b border-zinc-800 pb-3">
-                    <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                        <i data-lucide="clock" class="w-4 h-4 text-amber-400 shrink-0"></i>
-                        <span>Adicionar ou Editar Horários de Atendimento</span>
-                    </h3>
-                    <p class="text-xs text-zinc-400 mt-0.5">Configure os horários que aparecem disponíveis para os clientes marcarem.</p>
-                </div>
-
-                <!-- Formulário para Adicionar ou Editar Horário -->
-                <form onsubmit="handleSaveTimeSlot(event)" class="flex flex-col sm:flex-row gap-2.5">
-                    <input type="hidden" id="editing-old-time" value="">
-                    <div class="flex-1">
-                        <input type="time" id="new-time-slot-input" required
-                            class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
-                    </div>
-                    <button type="submit" id="save-time-btn" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0">
-                        Adicionar Horário
-                    </button>
-                    <button type="button" id="cancel-edit-time-btn" onclick="cancelEditTimeSlot()" class="hidden w-full sm:w-auto px-4 py-2.5 rounded-xl bg-obsidian-800 text-zinc-300 hover:text-white text-xs font-semibold transition shrink-0">
-                        Cancelar
-                    </button>
-                </form>
-
-                <!-- Grade de Horários Cadastrados na Planilha -->
-                <div>
-                    <p class="text-xs font-semibold text-zinc-400 mb-2">Horários ativos na sua grade (clique no lápis para editar):</p>
-                    <div id="barber-timeslots-manager" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        <!-- Renderizado via JS -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Configuração do WhatsApp do Barbeiro -->
-            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3">
-                <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="phone" class="w-4 h-4 text-emerald-400 shrink-0"></i>
-                    <span>WhatsApp que Recebe os Pedidos</span>
-                </h3>
-                <div class="flex flex-col sm:flex-row gap-2.5">
-                    <input type="tel" id="barber-whatsapp-input" placeholder="55 + DDD + Número (Ex: 5562999999999)"
-                        class="w-full sm:flex-1 px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
-                    <button type="button" onclick="saveBarberWhatsApp()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0">
-                        Salvar Número
-                    </button>
-                </div>
-            </div>
-
-            <!-- AGENDA & NOTIFICAÇÕES RECEBIDAS DA PLANILHA -->
-            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3.5">
-                <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-                    <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                        <i data-lucide="calendar-check" class="w-4 h-4 text-emerald-400"></i>
-                        <span>Horários Marcados (<span id="bookings-count">0</span>)</span>
-                    </h3>
-                    <button type="button" onclick="clearAllBookings()" class="text-xs text-zinc-400 hover:text-red-400 transition">Limpar Tudo</button>
-                </div>
-                <div id="barber-bookings-list" class="space-y-3">
-                    <!-- Lista de agendamentos renderizada via JS -->
-                </div>
-            </div>
-
-            <!-- ADICIONAR FOTOS E VÍDEOS DE CORTES AO CATÁLOGO -->
-            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-4">
-                <div class="border-b border-zinc-800 pb-3">
-                    <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                        <i data-lucide="film" class="w-4 h-4 text-amber-400"></i>
-                        <span>Publicar Fotos ou Vídeos de Cortes</span>
-                    </h3>
-                    <p class="text-xs text-zinc-400 mt-0.5">Adicione seus cortes para os clientes escolherem.</p>
-                </div>
-
-                <form onsubmit="handleAddMedia(event)" class="space-y-3">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs text-zinc-400 mb-1">Nome do Corte *</label>
-                            <input type="text" id="media-title" required placeholder="Ex: Degradê Navalhado"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-zinc-400 mb-1">Tipo de Mídia *</label>
-                            <select id="media-type" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
-                                <option value="photo">Foto do Corte</option>
-                                <option value="video">Vídeo do Corte</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-zinc-400 mb-1">Link da Foto/Vídeo (Recomendado para GitHub Pages)</label>
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <input type="url" id="media-url" placeholder="https://..."
-                                class="w-full sm:flex-1 px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
-                            <label class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 border border-zinc-700 text-xs font-semibold text-zinc-200 flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
-                                <i data-lucide="upload" class="w-4 h-4 text-amber-400"></i>
-                                <span>Arquivo Local</span>
-                                <input type="file" id="media-file" accept="image/*,video/*" class="hidden" onchange="previewLocalFileName(this)">
-                            </label>
-                        </div>
-                        <p id="selected-file-label" class="text-[11px] text-amber-400 mt-1 hidden break-all"></p>
-                    </div>
-                    <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition">
-                        Publicar no Catálogo
-                    </button>
-                </form>
-
-                <!-- Lista para gerenciar/remover mídias publicadas -->
-                <div class="pt-3 border-t border-zinc-800">
-                    <p class="text-xs font-semibold text-zinc-400 mb-2.5">Itens Ativos no Catálogo:</p>
-                    <div id="barber-media-manager" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        <!-- Renderizado via JS -->
-                    </div>
-                </div>
-            </div>
         </section>
     </main>
 
@@ -480,7 +355,7 @@
         <p>Secreta Barber © 2026 • Agendamento Online</p>
     </footer>
 
-    <!-- LÓGICA COMPLETA E INTEGRADA COM GOOGLE SHEETS -->
+    <!-- LÓGICA DO CLIENTE INTEGRADA COM GOOGLE SHEETS -->
     <script>
         // ==========================================
         // 1. DADOS INICIAIS E ESTADO DA APLICAÇÃO
@@ -498,7 +373,7 @@
             '16:30', '17:15', '18:00', '18:45'
         ];
 
-        const DEFAULT_PORTFOLIO = [
+        const PORTFOLIO_ITEMS = [
             {
                 id: 'm_1',
                 title: 'Mid Fade Navalhado',
@@ -522,26 +397,15 @@
         // Estado em memória sincronizado com a Planilha Google
         let bookings = [];
         let timeSlots = [...FALLBACK_TIME_SLOTS];
-        let knownBookingIds = new Set();
-        let isFirstSync = true;
 
-        // Configurações locais do aparelho
-        let barberWhatsApp = localStorage.getItem('sb_whatsapp') || '5562999999999';
-        let portfolioItems = [];
-
-        try {
-            const savedMedia = JSON.parse(localStorage.getItem('sb_portfolio'));
-            portfolioItems = (Array.isArray(savedMedia) && savedMedia.length > 0) ? savedMedia : DEFAULT_PORTFOLIO;
-        } catch (e) {
-            portfolioItems = DEFAULT_PORTFOLIO;
-        }
+        // Perfil do cliente salvo exclusivamente no localStorage do celular dele
+        let clientProfile = { name: '', phone: '' };
 
         let selectedService = DEFAULT_SERVICES[0];
         let selectedDate = null;
         let selectedTime = null;
         let selectedCutStyle = null;
         let currentMediaFilter = 'all';
-        let unreadNotifications = 0;
 
         function isScriptConfigured() {
             return typeof GOOGLE_SCRIPT_URL === 'string' &&
@@ -552,24 +416,25 @@
         // 2. INICIALIZAÇÃO AO CARREGAR A PÁGINA
         // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
-            document.getElementById('barber-whatsapp-input').value = barberWhatsApp;
-
-            // Carregar Nome e WhatsApp salvos APENAS no localStorage do celular do cliente
-            loadClientProfileLocally();
-
             generateNextDays();
             renderServices();
             renderTimes();
-            renderBarberTimeSlotsManager();
             renderPortfolio();
             updateSummary();
 
+            // Verifica se o cliente já tem nome e WhatsApp salvos no localStorage deste celular
+            const hasSavedProfile = loadClientProfileFromStorage();
+            if (hasSavedProfile) {
+                enterBookingArea();
+            } else {
+                openLoginGate();
+            }
+
             if (!isScriptConfigured()) {
-                document.getElementById('missing-url-warning').classList.remove('hidden');
-                setSyncStatus('error', 'URL do Apps Script pendente');
+                setSyncStatus('error', 'Agenda não configurada');
             } else {
                 await syncWithGoogleSheets(false);
-                // Verifica novos agendamentos e atualizações de horários a cada 20 segundos
+                // Atualiza horários ocupados automaticamente a cada 20 segundos
                 setInterval(() => syncWithGoogleSheets(false), 20000);
             }
 
@@ -577,45 +442,96 @@
         });
 
         // ==========================================
-        // 3. LOCALSTORAGE EXCLUSIVO DO CLIENTE (NOME E CELULAR)
+        // 3. IDENTIFICAÇÃO E LOCALSTORAGE DO CLIENTE
         // ==========================================
-        function loadClientProfileLocally() {
+        function loadClientProfileFromStorage() {
             try {
                 const raw = localStorage.getItem('sb_client_profile');
-                if (!raw) return;
-                const profile = JSON.parse(raw);
-                if (profile.name) document.getElementById('client-name').value = profile.name;
-                if (profile.phone) document.getElementById('client-phone').value = profile.phone;
-                if (profile.name || profile.phone) {
-                    document.getElementById('clear-client-storage-btn').classList.remove('hidden');
+                if (!raw) return false;
+                const parsed = JSON.parse(raw);
+                if (parsed && parsed.name && parsed.phone) {
+                    clientProfile = {
+                        name: String(parsed.name).trim(),
+                        phone: String(parsed.phone).trim()
+                    };
+                    return true;
                 }
             } catch (e) {
-                // Ignora erro de leitura
+                // Ignora erro de storage
             }
+            return false;
         }
 
-        function saveClientProfileLocally() {
-            const name = document.getElementById('client-name').value.trim();
-            const phone = document.getElementById('client-phone').value.trim();
+        function saveClientProfileToStorage(name, phone) {
+            clientProfile = { name: name.trim(), phone: phone.trim() };
             try {
-                localStorage.setItem('sb_client_profile', JSON.stringify({ name, phone }));
-                const clearBtn = document.getElementById('clear-client-storage-btn');
-                if (name || phone) {
-                    clearBtn.classList.remove('hidden');
-                } else {
-                    clearBtn.classList.add('hidden');
-                }
+                localStorage.setItem('sb_client_profile', JSON.stringify(clientProfile));
             } catch (e) {
                 // Ignora se modo privado bloquear storage
             }
         }
 
+        function openLoginGate() {
+            document.getElementById('client-login-gate').classList.remove('hidden');
+            document.getElementById('client-booking-area').classList.add('hidden');
+            document.getElementById('header-user-pill').classList.add('hidden');
+            document.getElementById('header-user-pill').classList.remove('flex');
+
+            document.getElementById('gate-client-name').value = clientProfile.name || '';
+            document.getElementById('gate-client-phone').value = clientProfile.phone || '';
+
+            const clearBtn = document.getElementById('gate-clear-btn');
+            if (clientProfile.name || clientProfile.phone) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function enterBookingArea() {
+            document.getElementById('client-login-gate').classList.add('hidden');
+            document.getElementById('client-booking-area').classList.remove('hidden');
+
+            const pill = document.getElementById('header-user-pill');
+            pill.classList.remove('hidden');
+            pill.classList.add('flex');
+
+            document.getElementById('header-user-name').textContent = clientProfile.name;
+            document.getElementById('header-user-phone').textContent = clientProfile.phone;
+
+            const firstName = clientProfile.name.split(' ')[0];
+            document.getElementById('welcome-client-name').textContent = firstName;
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function handleClientLogin(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('gate-client-name').value.trim();
+            const phoneInput = document.getElementById('gate-client-phone').value.trim();
+
+            if (nameInput.length < 2) {
+                showPushBanner('Nome Inválido', 'Digite seu nome ou apelido para continuar.');
+                return;
+            }
+            if (phoneInput.replace(/\D/g, '').length < 10) {
+                showPushBanner('Número Inválido', 'Digite seu WhatsApp com DDD (ex: 62 99999-9999).');
+                return;
+            }
+
+            saveClientProfileToStorage(nameInput, phoneInput);
+            enterBookingArea();
+        }
+
         function clearClientLocalStorage() {
             localStorage.removeItem('sb_client_profile');
-            document.getElementById('client-name').value = '';
-            document.getElementById('client-phone').value = '';
-            document.getElementById('clear-client-storage-btn').classList.add('hidden');
-            showPushBanner('Dados Removidos', 'Seu nome e número foram apagados deste celular.');
+            clientProfile = { name: '', phone: '' };
+            document.getElementById('gate-client-name').value = '';
+            document.getElementById('gate-client-phone').value = '';
+            document.getElementById('gate-clear-btn').classList.add('hidden');
+            showPushBanner('Dados Apagados', 'Seu nome e número foram removidos deste celular.');
         }
 
         function maskPhoneInput(input) {
@@ -649,131 +565,60 @@
         async function syncWithGoogleSheets(manualNotify = false) {
             if (!isScriptConfigured()) return;
 
-            setSyncStatus('loading', 'Sincronizando agenda...');
+            setSyncStatus('loading', 'Atualizando horários...');
             try {
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`);
                 const data = await response.json();
 
                 if (data.status === 'ok') {
-                    // Detectar novos agendamentos para disparar alerta sonoro/visual ao barbeiro
-                    if (!isFirstSync && Array.isArray(data.bookings)) {
-                        data.bookings.forEach(b => {
-                            if (!knownBookingIds.has(b.id)) {
-                                triggerBarberAppNotification(b);
-                            }
-                        });
-                    }
-
                     bookings = Array.isArray(data.bookings) ? data.bookings : [];
-                    knownBookingIds = new Set(bookings.map(b => b.id));
-                    isFirstSync = false;
 
                     if (Array.isArray(data.timeSlots) && data.timeSlots.length > 0) {
                         timeSlots = data.timeSlots;
                     }
 
-                    // Se o horário selecionado pelo cliente acabou de ser ocupado por outra pessoa, desmarca
+                    // Se o horário selecionado acabou de ser reservado por outro cliente, desmarca
                     if (selectedTime && bookings.some(b => b.dateIso === selectedDate.iso && b.time === selectedTime)) {
                         selectedTime = null;
                         updateSummary();
                     }
 
                     renderTimes();
-                    renderBarberTimeSlotsManager();
-                    renderBarberBookings();
-                    setSyncStatus('ok', 'Agenda Online Sincronizada');
+                    setSyncStatus('ok', 'Horários Atualizados');
 
                     if (manualNotify) {
-                        showPushBanner('Agenda Atualizada', 'Horários sincronizados com a Planilha Google.');
+                        showPushBanner('Agenda Atualizada', 'Lista de horários sincronizada em tempo real.');
                     }
                 } else {
-                    setSyncStatus('error', 'Erro ao ler planilha');
+                    setSyncStatus('error', 'Erro ao carregar agenda');
                 }
             } catch (err) {
-                setSyncStatus('error', 'Sem conexão com a planilha');
+                setSyncStatus('error', 'Sem conexão com a agenda');
             }
         }
 
         async function postToGoogleSheets(payload) {
             if (!isScriptConfigured()) {
-                showPushBanner('Erro de Configuração', 'Cole a URL do Apps Script no topo do HTML primeiro.');
+                showPushBanner('Agenda Offline', 'O sistema ainda não foi conectado à planilha.');
                 return { status: 'error' };
             }
 
-            setSyncStatus('loading', 'Salvando na planilha...');
+            setSyncStatus('loading', 'Confirmando reserva...');
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
-                const result = await response.json();
-                return result;
+                return await response.json();
             } catch (err) {
-                setSyncStatus('error', 'Falha ao salvar');
+                setSyncStatus('error', 'Falha na conexão');
                 return { status: 'error', message: err.toString() };
             }
         }
 
         // ==========================================
-        // 5. SOM DE NOTIFICAÇÃO VIA TONE.JS
-        // ==========================================
-        async function playNotificationChime() {
-            try {
-                if (typeof Tone !== 'undefined') {
-                    await Tone.start();
-                    const synth = new Tone.PolySynth(Tone.Synth).toDestination();
-                    synth.volume.value = -6;
-                    const now = Tone.now();
-                    synth.triggerAttackRelease("E5", "16n", now);
-                    synth.triggerAttackRelease("G#5", "16n", now + 0.12);
-                    synth.triggerAttackRelease("B5", "8n", now + 0.24);
-                }
-            } catch (e) {
-                // Ignora bloqueio de áudio automático
-            }
-        }
-
-        // ==========================================
-        // 6. NAVEGAÇÃO ENTRE CLIENTE E BARBEIRO
-        // ==========================================
-        function switchView(mode) {
-            const clientView = document.getElementById('view-client');
-            const barberView = document.getElementById('view-barber');
-            const btnClient = document.getElementById('btn-mode-client');
-            const btnBarber = document.getElementById('btn-mode-barber');
-
-            if (mode === 'client') {
-                clientView.classList.remove('hidden');
-                barberView.classList.add('hidden');
-                btnClient.className = 'px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 text-black transition';
-                btnBarber.className = 'relative px-3 py-2 rounded-xl text-xs font-semibold bg-obsidian-800 text-zinc-300 hover:text-white border border-zinc-700/70 transition flex items-center gap-1.5';
-            } else {
-                clientView.classList.add('hidden');
-                barberView.classList.remove('hidden');
-                btnBarber.className = 'relative px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 text-black transition flex items-center gap-1.5';
-                btnClient.className = 'px-3 py-2 rounded-xl text-xs font-semibold bg-obsidian-800 text-zinc-300 hover:text-white border border-zinc-700/70 transition';
-
-                unreadNotifications = 0;
-                updateUnreadBadge();
-                renderBarberBookings();
-                renderBarberTimeSlotsManager();
-            }
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function updateUnreadBadge() {
-            const badge = document.getElementById('unread-badge');
-            if (unreadNotifications > 0) {
-                badge.textContent = unreadNotifications;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
-        // ==========================================
-        // 7. CATÁLOGO DE FOTOS E VÍDEOS DE CORTES
+        // 5. CATÁLOGO DE FOTOS E VÍDEOS DE CORTES
         // ==========================================
         function filterPortfolio(type) {
             currentMediaFilter = type;
@@ -788,12 +633,7 @@
 
         function renderPortfolio() {
             const grid = document.getElementById('portfolio-grid');
-            const filtered = portfolioItems.filter(item => currentMediaFilter === 'all' || item.type === currentMediaFilter);
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-6 text-xs text-zinc-500 bg-obsidian-900 rounded-2xl border border-zinc-800">Nenhuma mídia nesta categoria.</div>`;
-                return;
-            }
+            const filtered = PORTFOLIO_ITEMS.filter(item => currentMediaFilter === 'all' || item.type === currentMediaFilter);
 
             grid.innerHTML = filtered.map(item => {
                 const isSelected = selectedCutStyle && selectedCutStyle.id === item.id;
@@ -823,7 +663,7 @@
         }
 
         function openMediaModal(id) {
-            const item = portfolioItems.find(m => m.id === id);
+            const item = PORTFOLIO_ITEMS.find(m => m.id === id);
             if (!item) return;
 
             const modal = document.getElementById('media-modal');
@@ -832,7 +672,7 @@
             const selectBtn = document.getElementById('modal-select-cut-btn');
 
             title.textContent = item.title;
-            const isVideoFile = item.type === 'video' && (item.url.endsWith('.mp4') || item.url.startsWith('data:video') || item.url.startsWith('blob:'));
+            const isVideoFile = item.type === 'video' && (item.url.endsWith('.mp4') || item.url.startsWith('data:video'));
 
             if (isVideoFile) {
                 content.innerHTML = `<video src="${item.url}" controls autoplay playsinline class="w-full max-h-[50vh] object-contain"></video>`;
@@ -869,7 +709,7 @@
         }
 
         // ==========================================
-        // 8. SERVIÇOS, DIAS (FUSO LOCAL CORRIGIDO) E HORÁRIOS
+        // 6. SERVIÇOS, DIAS DA SEMANA E HORÁRIOS
         // ==========================================
         function getLocalDateIso(dateObj) {
             const year = dateObj.getFullYear();
@@ -954,7 +794,7 @@
         function renderTimes() {
             const grid = document.getElementById('times-grid');
             if (!timeSlots || timeSlots.length === 0) {
-                grid.innerHTML = `<p class="col-span-full text-xs text-zinc-500 text-center py-4">Nenhum horário cadastrado pelo barbeiro.</p>`;
+                grid.innerHTML = `<p class="col-span-full text-xs text-zinc-500 text-center py-4">Nenhum horário disponível no momento.</p>`;
                 return;
             }
 
@@ -992,7 +832,7 @@
         function updateSummary() {
             const el = document.getElementById('booking-summary-text');
             if (!selectedService || !selectedDate || !selectedTime) {
-                el.textContent = `${selectedService ? selectedService.name : 'Serviço'} • Escolha um horário acima`;
+                el.textContent = `${selectedService ? selectedService.name : 'Serviço'} • Escolha um dia e horário acima`;
                 return;
             }
             const stylePart = selectedCutStyle ? ` • Corte: ${selectedCutStyle.title}` : '';
@@ -1000,32 +840,32 @@
         }
 
         // ==========================================
-        // 9. ENVIO DO AGENDAMENTO PARA A PLANILHA + WHATSAPP
+        // 7. ENVIO DO AGENDAMENTO + WHATSAPP
         // ==========================================
         async function handleBookingSubmit(e) {
             e.preventDefault();
+
+            if (!clientProfile.name || !clientProfile.phone) {
+                openLoginGate();
+                return;
+            }
 
             if (!selectedTime) {
                 showPushBanner('Escolha o Horário', 'Selecione um horário livre antes de confirmar.');
                 return;
             }
 
-            const clientName = document.getElementById('client-name').value.trim();
-            const clientPhone = document.getElementById('client-phone').value.trim();
             const clientNotes = document.getElementById('client-notes').value.trim();
-
-            // Garante salvamento no localStorage do celular do cliente
-            saveClientProfileLocally();
 
             const submitBtn = document.getElementById('submit-booking-btn');
             const submitText = document.getElementById('submit-booking-text');
             submitBtn.disabled = true;
-            submitText.textContent = 'Reservando na agenda...';
+            submitText.textContent = 'Reservando horário...';
 
             const newBooking = {
                 id: 'bk_' + Date.now(),
-                clientName,
-                clientPhone,
+                clientName: clientProfile.name,
+                clientPhone: clientProfile.phone,
                 serviceName: selectedService.name,
                 servicePrice: selectedService.price,
                 dateIso: selectedDate.iso,
@@ -1045,7 +885,7 @@
             submitText.textContent = 'Confirmar & Enviar WhatsApp';
 
             if (res.status === 'conflict') {
-                showPushBanner('Horário Indisponível', res.message || 'Outro cliente acabou de reservar esse horário.');
+                showPushBanner('Horário Ocupado', res.message || 'Outro cliente acabou de reservar esse horário.');
                 selectedTime = null;
                 await syncWithGoogleSheets(false);
                 updateSummary();
@@ -1053,14 +893,12 @@
             }
 
             if (res.status !== 'ok') {
-                showPushBanner('Erro ao Agendar', 'Verifique sua internet ou a configuração da planilha.');
+                showPushBanner('Erro ao Agendar', 'Verifique sua conexão com a internet e tente novamente.');
                 return;
             }
 
-            // Atualiza estado local e sincroniza
-            knownBookingIds.add(newBooking.id);
             bookings.unshift(newBooking);
-            setSyncStatus('ok', 'Agenda Online Sincronizada');
+            setSyncStatus('ok', 'Horário Reservado');
 
             const waText =
                 `*SECRETA BARBER - NOVO AGENDAMENTO*%0A` +
@@ -1073,11 +911,11 @@
                 `*Corte Ref.:* ${encodeURIComponent(newBooking.cutStyle)}%0A` +
                 `*Obs:* ${encodeURIComponent(newBooking.notes)}`;
 
-            const cleanBarberNumber = barberWhatsApp.replace(/\D/g, '');
+            const cleanBarberNumber = String(BARBER_WHATSAPP).replace(/\D/g, '');
             const waUrl = `https://wa.me/${cleanBarberNumber}?text=${waText}`;
 
             document.getElementById('success-details-box').innerHTML = `
-                <p><strong class="text-white">Cliente:</strong> ${newBooking.clientName}</p>
+                <p><strong class="text-white">Cliente:</strong> ${newBooking.clientName} (${newBooking.clientPhone})</p>
                 <p><strong class="text-white">Serviço:</strong> ${newBooking.serviceName} (${newBooking.servicePrice})</p>
                 <p><strong class="text-white">Quando:</strong> ${newBooking.dateDisplay} às ${newBooking.time}</p>
                 <p><strong class="text-white">Corte Ref.:</strong> ${newBooking.cutStyle}</p>
@@ -1090,7 +928,6 @@
 
             selectedTime = null;
             renderTimes();
-            renderBarberBookings();
             updateSummary();
         }
 
@@ -1101,22 +938,8 @@
         }
 
         // ==========================================
-        // 10. NOTIFICAÇÕES INTERNAS DO BARBEIRO
+        // 8. AVISOS INTERNOS
         // ==========================================
-        function triggerBarberAppNotification(booking) {
-            unreadNotifications++;
-            updateUnreadBadge();
-            playNotificationChime();
-
-            if ('vibrate' in navigator) {
-                navigator.vibrate([200, 100, 200]);
-            }
-
-            const title = `${booking.clientName} • ${booking.time}`;
-            const desc = `${booking.serviceName} (${booking.dateDisplay}) - Corte: ${booking.cutStyle}`;
-            showPushBanner(title, desc);
-        }
-
         function showPushBanner(title, desc) {
             const banner = document.getElementById('app-push-banner');
             document.getElementById('push-banner-title').textContent = title;
@@ -1127,231 +950,13 @@
 
             setTimeout(() => {
                 hidePushBanner();
-            }, 5500);
+            }, 5000);
         }
 
         function hidePushBanner() {
             const banner = document.getElementById('app-push-banner');
             banner.classList.add('-translate-y-40', 'opacity-0');
             banner.classList.remove('translate-y-0', 'opacity-100');
-        }
-
-        // ==========================================
-        // 11. PAINEL DO BARBEIRO: ADICIONAR / EDITAR HORÁRIOS NA PLANILHA
-        // ==========================================
-        function renderBarberTimeSlotsManager() {
-            const container = document.getElementById('barber-timeslots-manager');
-            if (!timeSlots || timeSlots.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-xs text-zinc-500">Nenhum horário cadastrado.</p>`;
-                return;
-            }
-
-            container.innerHTML = timeSlots.map(time => `
-                <div class="flex items-center justify-between bg-obsidian-950 border border-zinc-800 px-3 py-2 rounded-xl">
-                    <span class="text-xs font-extrabold text-white">${time}</span>
-                    <div class="flex items-center gap-1">
-                        <button type="button" onclick="startEditTimeSlot('${time}')" class="p-1 text-zinc-400 hover:text-amber-400 transition" title="Editar horário">
-                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                        </button>
-                        <button type="button" onclick="deleteTimeSlot('${time}')" class="p-1 text-zinc-400 hover:text-red-400 transition" title="Excluir horário">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function startEditTimeSlot(time) {
-            document.getElementById('editing-old-time').value = time;
-            document.getElementById('new-time-slot-input').value = time;
-            document.getElementById('save-time-btn').textContent = 'Salvar Alteração';
-            document.getElementById('cancel-edit-time-btn').classList.remove('hidden');
-            document.getElementById('new-time-slot-input').focus();
-        }
-
-        function cancelEditTimeSlot() {
-            document.getElementById('editing-old-time').value = '';
-            document.getElementById('new-time-slot-input').value = '';
-            document.getElementById('save-time-btn').textContent = 'Adicionar Horário';
-            document.getElementById('cancel-edit-time-btn').classList.add('hidden');
-        }
-
-        async function handleSaveTimeSlot(e) {
-            e.preventDefault();
-            const newTime = document.getElementById('new-time-slot-input').value.trim();
-            const oldTime = document.getElementById('editing-old-time').value.trim();
-            if (!newTime) return;
-
-            const btn = document.getElementById('save-time-btn');
-            btn.disabled = true;
-            btn.textContent = 'Salvando...';
-
-            const res = await postToGoogleSheets({
-                action: 'saveTimeSlot',
-                time: newTime,
-                oldTime: oldTime || null
-            });
-
-            btn.disabled = false;
-            cancelEditTimeSlot();
-
-            if (res.status === 'ok') {
-                showPushBanner('Horário Salvo!', `O horário ${newTime} já está atualizado na planilha.`);
-                await syncWithGoogleSheets(false);
-            } else {
-                showPushBanner('Erro', res.message || 'Não foi possível salvar o horário.');
-            }
-        }
-
-        async function deleteTimeSlot(time) {
-            const res = await postToGoogleSheets({
-                action: 'deleteTimeSlot',
-                time: time
-            });
-
-            if (res.status === 'ok') {
-                showPushBanner('Horário Removido', `O horário ${time} foi excluído da grade.`);
-                await syncWithGoogleSheets(false);
-            }
-        }
-
-        // ==========================================
-        // 12. PAINEL DO BARBEIRO: AGENDA E MÍDIA
-        // ==========================================
-        function saveBarberWhatsApp() {
-            const val = document.getElementById('barber-whatsapp-input').value.trim();
-            if (!val) return;
-            barberWhatsApp = val;
-            localStorage.setItem('sb_whatsapp', barberWhatsApp);
-            showPushBanner('Número Salvo!', `Agendamentos irão para ${barberWhatsApp}`);
-        }
-
-        function renderBarberBookings() {
-            const container = document.getElementById('barber-bookings-list');
-            document.getElementById('bookings-count').textContent = bookings.length;
-
-            if (bookings.length === 0) {
-                container.innerHTML = `<p class="text-xs text-zinc-500 text-center py-5">Nenhum horário marcado na planilha ainda.</p>`;
-                return;
-            }
-
-            container.innerHTML = bookings.map(b => `
-                <div class="bg-obsidian-950 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-2.5">
-                    <div class="flex flex-wrap items-center justify-between gap-2">
-                        <div class="flex items-center gap-2">
-                            <span class="px-2 py-0.5 rounded bg-amber-500 text-black text-xs font-extrabold">${b.time}</span>
-                            <span class="text-xs font-semibold text-zinc-300">${b.dateDisplay}</span>
-                        </div>
-                        <span class="text-[11px] text-zinc-500">Às ${b.createdAt}</span>
-                    </div>
-                    <div class="space-y-0.5">
-                        <p class="text-sm font-bold text-white break-words">${b.clientName} <span class="text-xs font-normal text-zinc-400">(${b.clientPhone})</span></p>
-                        <p class="text-xs text-zinc-300">${b.serviceName} • <span class="text-amber-400">Corte: ${b.cutStyle}</span></p>
-                        ${b.notes && b.notes !== 'Nenhuma' ? `<p class="text-[11px] text-zinc-400 italic break-words">"${b.notes}"</p>` : ''}
-                    </div>
-                    <div class="flex items-center justify-end gap-2 pt-1 border-t border-zinc-900">
-                        <a href="https://wa.me/55${b.clientPhone.replace(/\D/g, '')}" target="_blank" rel="noopener noreferrer"
-                            class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
-                            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
-                            <span>WhatsApp</span>
-                        </a>
-                        <button type="button" onclick="removeBooking('${b.id}')" class="p-1.5 rounded-lg bg-obsidian-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 transition" title="Remover">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-            if (window.lucide) lucide.createIcons();
-        }
-
-        async function removeBooking(id) {
-            const res = await postToGoogleSheets({ action: 'removeBooking', id });
-            if (res.status === 'ok') {
-                showPushBanner('Agendamento Removido', 'Horário liberado novamente na planilha.');
-                await syncWithGoogleSheets(false);
-            }
-        }
-
-        async function clearAllBookings() {
-            const res = await postToGoogleSheets({ action: 'clearBookings' });
-            if (res.status === 'ok') {
-                showPushBanner('Agenda Limpa', 'Todos os agendamentos foram removidos da planilha.');
-                await syncWithGoogleSheets(false);
-            }
-        }
-
-        function previewLocalFileName(input) {
-            const label = document.getElementById('selected-file-label');
-            if (input.files && input.files[0]) {
-                label.textContent = `Arquivo: ${input.files[0].name}`;
-                label.classList.remove('hidden');
-            }
-        }
-
-        function handleAddMedia(e) {
-            e.preventDefault();
-            const title = document.getElementById('media-title').value.trim();
-            const type = document.getElementById('media-type').value;
-            const urlInput = document.getElementById('media-url').value.trim();
-            const fileInput = document.getElementById('media-file');
-
-            if (fileInput.files && fileInput.files[0]) {
-                const fileUrl = URL.createObjectURL(fileInput.files[0]);
-                saveNewMediaItem(title, type, fileUrl);
-            } else if (urlInput) {
-                saveNewMediaItem(title, type, urlInput);
-            } else {
-                showPushBanner('Faltou a Mídia', 'Cole um link ou selecione uma foto/vídeo do celular.');
-                return;
-            }
-
-            e.target.reset();
-            document.getElementById('selected-file-label').classList.add('hidden');
-        }
-
-        function saveNewMediaItem(title, type, url) {
-            const newItem = {
-                id: 'm_' + Date.now(),
-                title,
-                type,
-                url
-            };
-            portfolioItems.unshift(newItem);
-            try {
-                localStorage.setItem('sb_portfolio', JSON.stringify(portfolioItems));
-            } catch (err) {
-                // Mantém na sessão se exceder limite do navegador
-            }
-            renderPortfolio();
-            renderBarberMediaManager();
-            showPushBanner('Publicado!', `"${title}" adicionado ao catálogo.`);
-        }
-
-        function renderBarberMediaManager() {
-            const container = document.getElementById('barber-media-manager');
-            container.innerHTML = portfolioItems.map(item => `
-                <div class="flex items-center justify-between gap-2 bg-obsidian-950 border border-zinc-800 p-2.5 rounded-xl">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <img src="${item.url}" onerror="this.src='https://placehold.co/100x100/18181B/FBBF24?text=SB'" class="w-10 h-10 rounded-lg object-cover shrink-0">
-                        <div class="min-w-0">
-                            <p class="text-xs font-bold text-white truncate">${item.title}</p>
-                            <span class="text-[10px] uppercase text-amber-400">${item.type === 'video' ? 'Vídeo' : 'Foto'}</span>
-                        </div>
-                    </div>
-                    <button type="button" onclick="deleteMediaItem('${item.id}')" class="p-1.5 text-zinc-400 hover:text-red-400 transition shrink-0">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            `).join('');
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function deleteMediaItem(id) {
-            portfolioItems = portfolioItems.filter(m => m.id !== id);
-            localStorage.setItem('sb_portfolio', JSON.stringify(portfolioItems));
-            renderPortfolio();
-            renderBarberMediaManager();
         }
     </script>
 </body>
