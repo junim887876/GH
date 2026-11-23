@@ -1,1345 +1,1024 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full">
+<html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="robots" content="noindex, nofollow">
-    <title>SolarInvest & FlowNest (IA) • Hub 3D</title>
-
-    <!-- Configurações PWA -->
-    <meta name="theme-color" content="#050814">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Solar & FlowNest">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secreta Barber | Agendamento Online</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Inter Typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- QRious (Gerador de QR Code PIX) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-    <!-- MapLibre GL CSS & JS -->
-    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
-    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <!-- Fonte Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Tone.js para alerta sonoro de notificação -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
                     colors: {
-                        'solar-bg': '#050814',
-                        'solar-neon': '#39ff4d',
-                        'solar-gold': '#fbbf24'
+                        obsidian: {
+                            950: '#09090B',
+                            900: '#121215',
+                            800: '#1C1C21',
+                            700: '#27272E',
+                        }
                     }
                 }
             }
         }
     </script>
-
     <style>
-        * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
         html, body {
-            touch-action: manipulation;
-            min-height: 100%;
-            background-color: #050814;
-            color: #ffffff;
+            max-width: 100%;
             overflow-x: hidden;
+            background-color: #09090B;
+            color: #F4F4F5;
+            -webkit-tap-highlight-color: transparent;
         }
-        .tabular-nums { font-variant-numeric: tabular-nums; }
-
-        .page-ambient-bg {
-            position: fixed;
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121215;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272E;
+            border-radius: 9999px;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.85); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .animate-ring::before {
+            content: '';
+            position: absolute;
             inset: 0;
-            background:
-                radial-gradient(circle at 15% 15%, rgba(245, 158, 11, 0.12) 0%, transparent 45%),
-                radial-gradient(circle at 85% 20%, rgba(14, 165, 233, 0.18) 0%, transparent 50%),
-                linear-gradient(180deg, #090e24 0%, #050814 60%, #040711 100%);
-            pointer-events: none;
-            z-index: 0;
+            border-radius: 9999px;
+            border: 2px solid #FBBF24;
+            animation: pulse-ring 1.8s infinite;
         }
-
-        .hero-profit-box {
-            position: relative;
-            border-radius: 24px;
-            background: linear-gradient(135deg, rgba(22, 32, 58, 0.92) 0%, rgba(11, 18, 36, 0.96) 55%, rgba(12, 38, 34, 0.92) 100%);
-            border: 1px solid rgba(57, 255, 77, 0.35);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
-        }
-
-        .bolt-orb {
-            background: radial-gradient(circle at 35% 30%, rgba(57, 255, 77, 0.25), rgba(16, 185, 129, 0.06));
-            border: 1.5px solid rgba(57, 255, 77, 0.65);
-        }
-
-        .client-dark-card {
-            background: linear-gradient(180deg, rgba(19, 28, 52, 0.95) 0%, rgba(11, 17, 34, 0.98) 100%);
-            border-radius: 22px;
-            border: 1px solid rgba(96, 165, 250, 0.24);
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            contain: content;
-        }
-
-        .inner-profit-panel {
-            background: rgba(24, 35, 64, 0.75);
-            border: 1px solid rgba(148, 163, 184, 0.15);
-            border-radius: 14px;
-            padding: 10px 12px;
-        }
-
-        .btn-more-details {
-            width: 100%;
-            padding: 9px 14px;
-            border-radius: 999px;
-            background: linear-gradient(180deg, #1d4ed8 0%, #173ba6 100%);
-            border: 1px solid rgba(96, 165, 250, 0.45);
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            cursor: pointer;
-        }
-        .btn-more-details:active { transform: scale(0.97); }
-
-        .top-glass-pill {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(148, 163, 184, 0.22);
-        }
-
-        /* LEDs Status Servidor / API */
-        .server-pill-online { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(57, 255, 77, 0.45); box-shadow: 0 0 16px rgba(57, 255, 77, 0.15); }
-        .server-pill-offline { background: rgba(239, 68, 68, 0.14); border: 1px solid rgba(248, 113, 113, 0.55); box-shadow: 0 0 16px rgba(239, 68, 68, 0.22); }
-        .server-pill-checking { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(251, 191, 36, 0.4); }
-        .led-glow-green { background-color: #39ff4d; box-shadow: 0 0 8px #39ff4d, 0 0 16px #22c55e; }
-        .led-glow-red { background-color: #ef4444; box-shadow: 0 0 8px #ef4444, 0 0 16px #dc2626; }
-        .led-glow-amber { background-color: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
-
-        /* Modais Bottom Sheet */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(3, 6, 16, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 2000;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.25s ease;
-        }
-        .bottom-sheet {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translate(-50%, 100%);
-            width: 100%;
-            max-width: 520px;
-            background: #10172d;
-            color: #ffffff;
-            border-top-left-radius: 26px;
-            border-top-right-radius: 26px;
-            padding: 18px 20px calc(env(safe-area-inset-bottom) + 28px);
-            z-index: 2001;
-            border-top: 1px solid rgba(96, 165, 250, 0.3);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-pill {
-            width: 40px;
-            height: 4px;
-            background: rgba(255,255,255,0.22);
-            border-radius: 99px;
-            margin: 0 auto 16px;
-        }
-
-        /* Navegação Principal Fixa (3 Abas) */
-        .main-tab-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 1500;
-            background: rgba(9, 14, 34, 0.96);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(96, 165, 250, 0.25);
-            padding: 8px 12px calc(env(safe-area-inset-bottom) + 8px);
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.65);
-        }
-        .main-tab-btn {
-            flex: 1;
-            max-width: 180px;
-            padding: 8px 10px;
-            border-radius: 16px;
-            border: 1px solid transparent;
-            background: transparent;
-            color: #94a3b8;
-            font-size: 11px;
-            font-weight: 800;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .main-tab-btn i { font-size: 16px; }
-        .main-tab-btn.active[data-tab="solar"] {
-            background: rgba(245, 158, 11, 0.16);
-            border-color: rgba(245, 158, 11, 0.45);
-            color: #fbbf24;
-        }
-        .main-tab-btn.active[data-tab="software"] {
-            background: rgba(56, 189, 248, 0.16);
-            border-color: rgba(56, 189, 248, 0.45);
-            color: #38bdf8;
-        }
-        .main-tab-btn.active[data-tab="mapa"] {
-            background: rgba(57, 255, 77, 0.16);
-            border-color: rgba(57, 255, 77, 0.45);
-            color: #39ff4d;
-        }
-
-        /* Estilos Específicos da Aba Mapa 3D */
-        #view-mapa {
-            position: fixed;
-            inset: 0;
-            z-index: 50;
-            background: #020617;
-            display: none;
-        }
-        #map { width: 100%; height: 100%; }
-        .map-header {
-            position: absolute;
-            top: calc(env(safe-area-inset-top) + 12px);
-            left: 12px; right: 12px; z-index: 100;
-            background: rgba(15, 23, 42, 0.92);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 16px; padding: 10px 14px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .map-controls {
-            position: absolute;
-            top: calc(env(safe-area-inset-top) + 72px);
-            right: 12px; z-index: 100;
-            display: flex; flex-direction: column; gap: 8px;
-        }
-        .btn-map-ctrl {
-            background: rgba(15, 23, 42, 0.92);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.15);
-            color: #fff; width: 44px; height: 44px; border-radius: 14px;
-            font-weight: 800; font-size: 13px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-        }
-        .btn-map-ctrl.unlocked { border-color: #10b981; color: #10b981; background: rgba(16,185,129,0.18); }
-        .btn-map-add {
-            position: absolute;
-            bottom: calc(env(safe-area-inset-bottom) + 138px);
-            right: 16px; z-index: 100; width: 56px; height: 56px;
-            border-radius: 50%; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff;
-            border: 2px solid rgba(255,255,255,0.25); display: none; align-items: center; justify-content: center; cursor: pointer;
-            box-shadow: 0 10px 25px rgba(37,99,235,0.55);
-        }
-        .map-bottom-bar {
-            position: absolute;
-            bottom: calc(env(safe-area-inset-bottom) + 76px);
-            left: 12px; right: 12px; z-index: 100;
-            display: flex; gap: 8px; pointer-events: none;
-        }
-        .btn-map-act {
-            flex: 1; pointer-events: auto;
-            background: rgba(15, 23, 42, 0.92);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255,255,255,0.15);
-            color: #f8fafc; padding: 11px; border-radius: 14px;
-            font-weight: 700; font-size: 12px;
-            display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
-        }
-        .crosshair { position: absolute; inset: 0; z-index: 150; pointer-events: none; display: none; align-items: center; justify-content: center; flex-direction: column; }
-        .crosshair.active { display: flex; }
-        .crosshair-pin { width: 42px; height: 42px; border: 3px solid #2563eb; border-radius: 50%; background: rgba(37,99,235,0.25); }
-        .crosshair-btn { pointer-events: auto; margin-top: 16px; background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 24px; font-weight: 800; cursor: pointer; }
-        .custom-svg-pin { filter: drop-shadow(0 6px 12px rgba(0,0,0,0.65)); cursor: pointer; }
-
-        .map-type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
-        .map-type-btn { padding: 10px 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: #090f22; color: #94a3b8; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
-        .map-type-btn.active[data-type="usina"] { background: rgba(245, 158, 11, 0.18); border-color: #f59e0b; color: #f59e0b; }
-        .map-type-btn.active[data-type="cliente"] { background: rgba(16, 185, 129, 0.18); border-color: #10b981; color: #10b981; }
-        .map-type-btn.active[data-type="aluguel"] { background: rgba(59, 130, 246, 0.18); border-color: #3b82f6; color: #3b82f6; }
-        .map-type-btn.active[data-type="software"] { background: rgba(139, 92, 246, 0.18); border-color: #8b5cf6; color: #8b5cf6; }
-
-        .list-group { margin-bottom: 16px; }
-        .list-group-header {
-            font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
-            padding: 8px 12px; border-radius: 10px; margin-bottom: 8px;
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255,255,255,0.12);
-        }
-        .list-group-count { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: rgba(255,255,255,0.1); color: #fff; }
-        .map-list-item { background: #090f22; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-
-        #toast-notification {
-            position: fixed;
-            bottom: 82px;
-            left: 50%;
-            transform: translate(-50%, 140px);
-            z-index: 3000;
-            transition: transform 0.3s ease;
-            width: max-content;
-            max-width: 92vw;
-        }
-        #toast-notification.show { transform: translate(-50%, 0); }
     </style>
 </head>
-<body class="bg-solar-bg min-h-screen font-sans selection:bg-solar-neon selection:text-slate-950">
+<body class="min-h-screen w-full flex flex-col selection:bg-amber-500 selection:text-black">
 
-    <div class="page-ambient-bg"></div>
-
-    <!-- NOTIFICAÇÃO FLUTUANTE GLOBAL -->
-    <div id="toast-notification" class="bg-[#111933] border border-solar-neon/60 text-white px-4 py-3 rounded-full shadow-2xl flex items-center gap-2.5 text-xs font-bold">
-        <span class="w-5 h-5 rounded-full bg-solar-neon text-slate-950 flex items-center justify-center text-[10px] flex-shrink-0">
-            <i class="fa-solid fa-bolt"></i>
-        </span>
-        <span id="toast-text" class="truncate">Sincronizando...</span>
-    </div>
-
-    <!-- =========================================================================
-         ABA 1: ENERGIA SOLAR (SOLAR INVEST)
-         ========================================================================= -->
-    <div id="view-solar" class="relative z-10 w-full min-h-screen flex flex-col pb-24">
-        <header class="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-3 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <!-- Logotipo SolarInvest -->
-            <div class="flex items-center gap-3 select-none">
-                <svg class="w-11 h-10 flex-shrink-0" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g stroke="#FBBF24" stroke-width="2.2" stroke-linecap="round">
-                        <line x1="26" y1="4" x2="26" y2="10"/>
-                        <line x1="12" y1="9" x2="16" y2="14"/>
-                        <line x1="40" y1="9" x2="36" y2="14"/>
-                        <line x1="5" y1="21" x2="11" y2="23"/>
-                        <line x1="47" y1="21" x2="41" y2="23"/>
-                    </g>
-                    <path d="M13 33C13 24.7157 19.268 18 27 18C34.732 18 41 24.7157 41 33H13Z" fill="#FBBF24"/>
-                    <path d="M18 32L47 26L56 44L23 48L18 32Z" fill="#1D4ED8" stroke="#93C5FD" stroke-width="1.5" stroke-linejoin="round"/>
-                    <line x1="27.5" y1="30" x2="33.5" y2="46.5" stroke="#BAE6FD" stroke-width="1.2"/>
-                    <line x1="37.5" y1="28" x2="44.5" y2="45.2" stroke="#BAE6FD" stroke-width="1.2"/>
-                    <line x1="20.5" y1="39.5" x2="51.2" y2="34.5" stroke="#BAE6FD" stroke-width="1.2"/>
-                    <path d="M12 49C24 46 42 46 58 49" stroke="#39FF4D" stroke-width="2.2" stroke-linecap="round"/>
-                </svg>
-                <div>
-                    <div class="text-xl sm:text-2xl font-black tracking-tight leading-none">
-                        <span class="text-white">SOLAR</span><span class="text-amber-400">INVEST</span>
-                    </div>
-                    <p class="text-[9px] sm:text-[10px] font-semibold tracking-[0.22em] text-slate-300 uppercase mt-1">
-                        ENERGIA QUE GERA ECONOMIA
-                    </p>
-                </div>
+    <!-- NOTIFICAÇÃO INTERNA DO APP (TOPO RESPONSIVO) -->
+    <div id="app-push-banner" class="fixed top-3 left-0 right-0 mx-auto z-50 w-[94%] max-w-md transform -translate-y-40 opacity-0 transition-all duration-500 pointer-events-none">
+        <div class="bg-obsidian-800/95 backdrop-blur-md border border-amber-500/60 rounded-2xl p-3.5 shadow-2xl flex items-start gap-3 pointer-events-auto">
+            <div class="relative w-9 h-9 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 animate-ring">
+                <i data-lucide="bell-ring" class="w-4 h-4"></i>
             </div>
-
-            <!-- Controles Superiores Solar -->
-            <div class="flex flex-wrap items-center justify-center gap-2.5">
-                <!-- LED Servidor PC -->
-                <button onclick="openSolarServerModal()" id="solar-server-pill" class="server-pill-checking rounded-2xl px-3.5 py-2 flex items-center gap-2.5 transition-all active:scale-95 cursor-pointer">
-                    <span class="relative flex h-3 w-3 flex-shrink-0">
-                        <span id="solar-led-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span id="solar-led-dot" class="relative inline-flex rounded-full h-3 w-3 led-glow-amber"></span>
-                    </span>
-                    <div class="text-left">
-                        <span id="solar-status-label" class="block text-[11px] font-extrabold tracking-wider uppercase text-amber-300 leading-none">VERIFICANDO...</span>
-                        <span id="solar-status-sub" class="block text-[9px] font-medium text-slate-300 leading-tight mt-0.5">Servidor PC</span>
-                    </div>
-                </button>
-
-                <!-- Seletor de Mês -->
-                <div class="top-glass-pill rounded-2xl px-4 py-2 flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-200">
-                        <i class="fa-regular fa-calendar text-sm"></i>
-                    </div>
-                    <div class="text-left">
-                        <span class="block text-[10px] font-medium text-slate-400 leading-tight">Lucro Total do Mês</span>
-                        <div class="flex items-center gap-1.5">
-                            <select id="solar-month-filter" class="bg-transparent text-white font-extrabold text-sm capitalize cursor-pointer focus:outline-none pr-1" onchange="filterSolarByMonth()"></select>
-                            <i class="fa-solid fa-chevron-down text-slate-300 text-[10px] pointer-events-none"></i>
-                        </div>
-                    </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 truncate">Secreta Barber • Alerta</span>
+                    <span class="text-[10px] text-zinc-400 shrink-0">Agora</span>
                 </div>
-
-                <!-- Botão Engrenagem Central -->
-                <button onclick="openUnifiedConfigModal()" title="Configurações Gerais (Planilhas, FlowNest, Mapa e PIX)" class="top-glass-pill w-11 h-11 rounded-full flex items-center justify-center text-white hover:border-solar-neon/50 active:scale-90 transition-all cursor-pointer">
-                    <i class="fa-solid fa-gear text-sm"></i>
-                </button>
+                <p id="push-banner-title" class="text-xs sm:text-sm font-semibold text-white truncate mt-0.5">Novo horário marcado</p>
+                <p id="push-banner-desc" class="text-xs text-zinc-300 mt-0.5 break-words">Detalhes...</p>
             </div>
-        </header>
-
-        <!-- Hero Card Lucro Solar -->
-        <section class="w-full max-w-3xl mx-auto px-4 sm:px-6 mt-2 mb-7">
-            <div class="hero-profit-box px-5 py-5 sm:px-9 sm:py-7 flex items-center justify-between gap-4">
-                <div class="bolt-orb w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fa-solid fa-bolt text-2xl sm:text-3xl text-solar-neon"></i>
-                </div>
-                <div class="flex-1 text-center min-w-0">
-                    <div class="inline-flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-slate-200 mb-1">
-                        <i class="fa-solid fa-arrow-trend-up text-solar-neon"></i>
-                        <span id="solar-hero-month-title">LUCRO TOTAL DO MÊS</span>
-                    </div>
-                    <div class="my-1 flex items-baseline justify-center gap-1.5 sm:gap-2">
-                        <span class="text-2xl sm:text-4xl font-extrabold text-slate-100">R$</span>
-                        <span id="solar-total-revenue" class="tabular-nums text-4xl sm:text-6xl font-black text-solar-neon tracking-tight">0,00</span>
-                    </div>
-                    <div class="mt-2 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/[0.06] border border-white/10 text-[11px] sm:text-xs text-slate-200 font-medium">
-                        <span class="w-4 h-4 rounded-full bg-solar-neon text-slate-950 flex items-center justify-center text-[9px] font-black"><i class="fa-solid fa-check"></i></span>
-                        <span id="solar-month-subtitle">Lucro Líquido da Usina</span>
-                    </div>
-                </div>
-                <div class="hidden sm:flex items-center justify-center flex-shrink-0 w-24 h-20">
-                    <svg viewBox="0 0 110 80" class="w-full h-full" fill="none">
-                        <rect x="8" y="54" width="12" height="20" rx="2" fill="#39FF4D" fill-opacity="0.5"/>
-                        <rect x="26" y="45" width="12" height="29" rx="2" fill="#39FF4D" fill-opacity="0.65"/>
-                        <rect x="44" y="36" width="12" height="38" rx="2" fill="#39FF4D" fill-opacity="0.75"/>
-                        <rect x="62" y="26" width="12" height="48" rx="2" fill="#39FF4D" fill-opacity="0.88"/>
-                        <rect x="80" y="16" width="12" height="58" rx="2" fill="#39FF4D"/>
-                        <path d="M10 48C34 42 62 28 94 8" stroke="#6EE7B7" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M84 7H96V19" stroke="#6EE7B7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-            </div>
-        </section>
-
-        <!-- Lista de Clientes Solar -->
-        <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <i class="fa-solid fa-users text-sky-400 text-lg"></i>
-                    <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Clientes & Faturas</h2>
-                    <span id="solar-cards-badge" class="tabular-nums text-[11px] font-bold bg-white/10 text-slate-300 px-2.5 py-0.5 rounded-full border border-white/10">0</span>
-                    <span class="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-400/25 px-2.5 py-0.5 rounded-full font-medium">
-                        <i class="fa-brands fa-whatsapp mr-1"></i>Clique no nome para enviar PNG + Mensagem
-                    </span>
-                </div>
-                <div class="relative w-full sm:w-64">
-                    <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-                    <input type="text" id="solar-search-input" oninput="renderSolarDashboard()" placeholder="Buscar cliente solar..." class="w-full bg-white/[0.06] border border-white/15 rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-400/60">
-                </div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="solar-cards-container"></div>
-        </main>
-    </div>
-
-    <!-- =========================================================================
-         ABA 2: SOFTWARE / FLOWNEST (IA)
-         ========================================================================= -->
-    <div id="view-software" class="hidden relative z-10 w-full min-h-screen flex-col pb-24">
-        <header class="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-3 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <!-- Logotipo FlowNest(IA) -->
-            <div class="flex items-center gap-3 select-none">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500/20 to-emerald-500/20 border border-sky-400/40 flex items-center justify-center shadow-lg">
-                    <i class="fa-solid fa-layer-group text-xl text-solar-neon"></i>
-                </div>
-                <div>
-                    <div class="text-xl sm:text-2xl font-black tracking-tight leading-none">
-                        <span class="text-white">FLOWNEST</span><span class="text-sky-400">(IA)</span>
-                    </div>
-                    <p class="text-[9px] sm:text-[10px] font-semibold tracking-[0.22em] text-slate-300 uppercase mt-1">
-                        GESTÃO DE LICENÇAS & SAAS
-                    </p>
-                </div>
-            </div>
-
-            <!-- Controles Superiores FlowNest -->
-            <div class="flex flex-wrap items-center justify-center gap-2.5">
-                <button onclick="loadFlowNestData(true)" id="fn-server-pill" class="server-pill-checking rounded-2xl px-3.5 py-2 flex items-center gap-2.5 transition-all active:scale-95 cursor-pointer">
-                    <span class="relative flex h-3 w-3 flex-shrink-0">
-                        <span id="fn-led-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span id="fn-led-dot" class="relative inline-flex rounded-full h-3 w-3 led-glow-amber"></span>
-                    </span>
-                    <div class="text-left">
-                        <span id="fn-status-label" class="block text-[11px] font-extrabold tracking-wider uppercase text-amber-300 leading-none">CONECTANDO...</span>
-                        <span id="fn-status-sub" class="block text-[9px] font-medium text-slate-300 leading-tight mt-0.5">Apps Script FlowNest</span>
-                    </div>
-                </button>
-
-                <div class="top-glass-pill rounded-2xl px-4 py-2 flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sky-400">
-                        <i class="fa-solid fa-filter text-xs"></i>
-                    </div>
-                    <div class="text-left">
-                        <span class="block text-[10px] font-medium text-slate-400 leading-tight">Filtrar Licenças</span>
-                        <div class="flex items-center gap-1.5">
-                            <select id="fn-status-filter" class="bg-transparent text-white font-extrabold text-sm cursor-pointer focus:outline-none pr-1" onchange="renderFlowNestDashboard()">
-                                <option value="TODOS" class="bg-[#0b1022] text-white">Todos os Clientes</option>
-                                <option value="ATIVO" class="bg-[#0b1022] text-emerald-400">Somente Ativos (Verde)</option>
-                                <option value="OFF" class="bg-[#0b1022] text-red-400">Bloqueados / OFF (Vermelho)</option>
-                            </select>
-                            <i class="fa-solid fa-chevron-down text-slate-300 text-[10px] pointer-events-none"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botão Engrenagem Central -->
-                <button onclick="openUnifiedConfigModal()" title="Configurações Gerais (Planilhas, FlowNest, Mapa e PIX)" class="top-glass-pill w-11 h-11 rounded-full flex items-center justify-center text-white hover:border-solar-neon/50 active:scale-90 transition-all cursor-pointer">
-                    <i class="fa-solid fa-gear text-sm"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Barra de Controle Remoto Estética KB -->
-        <section id="kb-control-bar" class="hidden w-full max-w-3xl mx-auto px-4 sm:px-6 mt-1 mb-3">
-            <div class="top-glass-pill rounded-2xl px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 border border-sky-400/35">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/35 flex items-center justify-center text-sky-400 flex-shrink-0">
-                        <i class="fa-solid fa-car-side text-sm"></i>
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-extrabold text-white">Estética KB (App Cliente)</span>
-                            <span id="kb-status-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/35">VERIFICANDO...</span>
-                        </div>
-                        <span id="kb-status-subtext" class="block text-[10px] text-slate-400 mt-0.5">Sincronizado via Apps Script Estética KB</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <button type="button" onclick="setKbEsteticaStatus('ATIVO')" id="btn-kb-ativo" class="flex-1 sm:flex-initial py-2 px-3.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 cursor-pointer">
-                        <i class="fa-solid fa-check"></i><span>Ativo</span>
-                    </button>
-                    <button type="button" onclick="setKbEsteticaStatus('BLOQUEADO')" id="btn-kb-bloqueado" class="flex-1 sm:flex-initial py-2 px-3.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-red-500/15 text-red-300 border border-red-500/40 cursor-pointer">
-                        <i class="fa-solid fa-ban"></i><span>Bloqueado</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Hero Card MRR FlowNest -->
-        <section class="w-full max-w-3xl mx-auto px-4 sm:px-6 mt-2 mb-7">
-            <div class="hero-profit-box px-5 py-5 sm:px-9 sm:py-7 flex items-center justify-between gap-4">
-                <div class="bolt-orb w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fa-solid fa-sack-dollar text-2xl sm:text-3xl text-solar-neon"></i>
-                </div>
-                <div class="flex-1 text-center min-w-0">
-                    <div class="inline-flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-slate-200 mb-1">
-                        <i class="fa-solid fa-arrow-trend-up text-solar-neon"></i>
-                        <span>RECEITA MENSAL ATIVA (MRR)</span>
-                    </div>
-                    <div class="my-1 flex items-baseline justify-center gap-1.5 sm:gap-2">
-                        <span class="text-2xl sm:text-4xl font-extrabold text-slate-100">R$</span>
-                        <span id="fn-total-revenue" class="tabular-nums text-4xl sm:text-6xl font-black text-solar-neon tracking-tight">0,00</span>
-                    </div>
-                    <div class="mt-2 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/[0.06] border border-white/10 text-[11px] sm:text-xs text-slate-200 font-medium">
-                        <span class="w-4 h-4 rounded-full bg-solar-neon text-slate-950 flex items-center justify-center text-[9px] font-black"><i class="fa-solid fa-check"></i></span>
-                        <span id="fn-subtitle-display">0 ativos • R$ 0,00 total cadastrado</span>
-                    </div>
-                </div>
-                <div class="hidden sm:flex items-center justify-center flex-shrink-0 w-24 h-20">
-                    <svg viewBox="0 0 110 80" class="w-full h-full" fill="none">
-                        <rect x="8" y="54" width="12" height="20" rx="2" fill="#39FF4D" fill-opacity="0.5"/>
-                        <rect x="26" y="45" width="12" height="29" rx="2" fill="#39FF4D" fill-opacity="0.65"/>
-                        <rect x="44" y="36" width="12" height="38" rx="2" fill="#39FF4D" fill-opacity="0.75"/>
-                        <rect x="62" y="26" width="12" height="48" rx="2" fill="#39FF4D" fill-opacity="0.88"/>
-                        <rect x="80" y="16" width="12" height="58" rx="2" fill="#39FF4D"/>
-                        <path d="M10 48C34 42 62 28 94 8" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M84 7H96V19" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-            </div>
-        </section>
-
-        <!-- Lista Assinantes FlowNest -->
-        <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <i class="fa-solid fa-users text-sky-400 text-lg"></i>
-                    <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Assinantes & Licenças</h2>
-                    <span id="fn-cards-badge" class="tabular-nums text-[11px] font-bold bg-white/10 text-slate-300 px-2.5 py-0.5 rounded-full border border-white/10">0</span>
-                </div>
-                <div class="flex items-center gap-2.5 w-full sm:w-auto">
-                    <button onclick="openFnNewClientModal()" class="bg-solar-neon hover:bg-emerald-400 active:scale-95 text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-full flex items-center justify-center gap-1.5 shadow-[0_0_18px_rgba(57,255,77,0.35)] transition-all flex-shrink-0 cursor-pointer">
-                        <i class="fa-solid fa-user-plus text-xs"></i><span>Novo Cliente</span>
-                    </button>
-                    <div class="relative flex-1 sm:w-60">
-                        <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-                        <input type="text" id="fn-search-input" oninput="renderFlowNestDashboard()" placeholder="Buscar assinante..." class="w-full bg-white/[0.06] border border-white/15 rounded-full pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-400/60">
-                    </div>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="fn-cards-container"></div>
-        </main>
-    </div>
-
-    <!-- =========================================================================
-         ABA 3: MAPA 3D (USINAS, CLIENTES, IMÓVEIS & FLOWNEST IA)
-         ========================================================================= -->
-    <div id="view-mapa">
-        <div id="map"></div>
-
-        <!-- Controles do Mapa (3D e Lock) -->
-        <div class="map-controls">
-            <button class="btn-map-ctrl" id="btn3d">3D</button>
-            <button class="btn-map-ctrl" id="btnAdminAuth" title="Área do Empresário"><i data-lucide="lock"></i></button>
-        </div>
-
-        <!-- Mira de Precisão -->
-        <div class="crosshair" id="crosshair">
-            <div class="crosshair-pin"></div>
-            <button class="crosshair-btn" id="btnConfirmCrosshair"><i data-lucide="check"></i> Confirmar Ponto Aqui</button>
-        </div>
-
-        <!-- Botão (+) -> Apenas para Empresário Logado -->
-        <button class="btn-map-add" id="btnToggleCrosshair"><i data-lucide="plus" style="width:26px;height:26px;"></i></button>
-
-        <!-- Top Bar do Mapa -->
-        <div class="map-header">
-            <div class="flex items-center gap-2 font-extrabold text-sm select-none cursor-pointer" id="brandBtn">
-                <i data-lucide="sun" class="text-amber-400 w-4 h-4"></i>
-                <span>Mapa 3D</span>
-                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/40 hidden" id="modeBadge">ADM</span>
-                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-red-500/20 text-red-400 border border-red-500/40 hidden" id="offlineBadge">OFFLINE</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <button class="btn-map-act !py-1.5 !px-2.5 !text-[11px]" id="btnSummary" style="display:none;"><i data-lucide="pie-chart" class="w-3.5 h-3.5"></i> Resumo</button>
-                <button onclick="openUnifiedConfigModal()" class="btn-map-act !py-1.5 !px-2.5 !text-[11px]" title="Configurar URL do Mapa, FlowNest e Solar"><i class="fa-solid fa-gear"></i></button>
-            </div>
-        </div>
-
-        <!-- Bottom Actions do Mapa -->
-        <div class="map-bottom-bar">
-            <button class="btn-map-act" id="btnList"><i data-lucide="list" class="w-4 h-4"></i> Pontos</button>
-            <button class="btn-map-act" id="btnSync"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Sincronizar</button>
-        </div>
-    </div>
-
-    <!-- =========================================================================
-         BARRA DE NAVEGAÇÃO PRINCIPAL FIXA (3 ABAS)
-         ========================================================================= -->
-    <nav class="main-tab-bar">
-        <button class="main-tab-btn active" data-tab="solar" onclick="switchMainTab('solar')">
-            <i class="fa-solid fa-solar-panel"></i>
-            <span>Energia Solar</span>
-        </button>
-        <button class="main-tab-btn" data-tab="software" onclick="switchMainTab('software')">
-            <i class="fa-solid fa-microchip"></i>
-            <span>FlowNest (IA)</span>
-        </button>
-        <button class="main-tab-btn" data-tab="mapa" onclick="switchMainTab('mapa')">
-            <i class="fa-solid fa-map-location-dot"></i>
-            <span>Mapa 3D</span>
-        </button>
-    </nav>
-
-    <!-- =========================================================================
-         MODAIS UNIFICADOS (CONFIGURAÇÃO CENTRAL + SOLAR + FLOWNEST + MAPA)
-         ========================================================================= -->
-
-    <!-- MODAL DE CONFIGURAÇÕES CENTRALIZADO (ENGRENAGEM) -->
-    <div class="modal-overlay" id="unified-config-overlay" onclick="closeUnifiedConfigModal()"></div>
-    <div class="bottom-sheet" id="unified-config-sheet">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-center mb-3">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-gear text-solar-neon"></i>
-                <h3 class="text-xl font-extrabold text-white">Configurações Gerais</h3>
-            </div>
-            <button onclick="closeUnifiedConfigModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300">
-                <i class="fa-solid fa-xmark"></i>
+            <button type="button" onclick="hidePushBanner()" class="text-zinc-400 hover:text-white p-1 shrink-0">
+                <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
+    </div>
 
-        <p class="text-[11px] text-emerald-300/90 bg-emerald-500/10 border border-emerald-500/25 rounded-xl px-3 py-2 mb-4 leading-relaxed">
-            <i class="fa-solid fa-shield-halved mr-1"></i>
-            Todas as URLs e chaves ficam salvas <strong>somente na memória deste aparelho</strong> (localStorage).
-        </p>
-
-        <div class="space-y-4">
-            <!-- 1. ENERGIA SOLAR -->
-            <div class="bg-white/[0.03] border border-amber-500/25 rounded-2xl p-3.5 space-y-2.5">
-                <span class="block text-xs font-extrabold text-amber-400 uppercase tracking-wider">
-                    <i class="fa-solid fa-solar-panel mr-1"></i> 1. Aba Energia Solar (Solar Invest)
-                </span>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Link ou ID da Planilha Google Sheets</label>
-                    <input type="text" id="cfg-solar-sheet-id" placeholder="Cole o Link ou ID da Planilha..." class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400">
+    <!-- CABEÇALHO PRINCIPAL ADAPTADO PARA CELULAR -->
+    <header class="sticky top-0 z-40 w-full bg-obsidian-950/95 backdrop-blur-md border-b border-zinc-800/80">
+        <div class="w-full max-w-2xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
+            <!-- Marca -->
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-black font-extrabold shadow shrink-0">
+                    <i data-lucide="scissors" class="w-4 h-4"></i>
                 </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Repositório Monitor Servidor PC (usuario/repo)</label>
-                    <input type="text" id="cfg-solar-github-repo" placeholder="Ex: junim887876/Aposta" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-400">
+                <div class="min-w-0">
+                    <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white leading-tight truncate">
+                        SECRETA <span class="text-amber-400">BARBER</span>
+                    </h1>
+                    <p class="text-[11px] text-zinc-400 flex items-center gap-1 truncate">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shrink-0"></span>
+                        <span class="truncate">Agendamento Exclusivo</span>
+                    </p>
                 </div>
             </div>
 
-            <!-- 2. FLOWNEST (IA) -->
-            <div class="bg-white/[0.03] border border-sky-400/25 rounded-2xl p-3.5 space-y-2.5">
-                <span class="block text-xs font-extrabold text-sky-400 uppercase tracking-wider">
-                    <i class="fa-solid fa-microchip mr-1"></i> 2. Aba FlowNest (IA) — Licenças Software
-                </span>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">URL Google Apps Script (FlowNest IA)</label>
-                    <input type="url" id="cfg-fn-appscript-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-sky-400">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">URL Google Apps Script — Estética KB (Opcional)</label>
-                    <input type="url" id="cfg-kb-appscript-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-sky-400">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Link de Acesso Portal FlowNest (Enviado no WhatsApp)</label>
-                    <input type="url" id="cfg-fn-portal-url" placeholder="https://seusistema.com.br" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-400">
-                </div>
-            </div>
-
-            <!-- 3. MAPA 3D -->
-            <div class="bg-white/[0.03] border border-emerald-400/25 rounded-2xl p-3.5 space-y-2.5">
-                <span class="block text-xs font-extrabold text-solar-neon uppercase tracking-wider">
-                    <i class="fa-solid fa-map-location-dot mr-1"></i> 3. Aba Mapa 3D (Sincronização Offline/Online)
-                </span>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">URL Google Apps Script (Planilha do Mapa 3D)</label>
-                    <input type="url" id="cfg-map-sheet-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-solar-neon">
-                </div>
-            </div>
-
-            <!-- 4. PIX OFICIAL -->
-            <div class="bg-white/[0.03] border border-white/15 rounded-2xl p-3.5 space-y-2.5">
-                <span class="block text-xs font-extrabold text-white uppercase tracking-wider">
-                    <i class="fa-brands fa-pix text-teal-400 mr-1"></i> 4. Código PIX Copia e Cola (QR Code das Faturas)
-                </span>
-                <div>
-                    <textarea id="cfg-pix-code" rows="2" placeholder="00020126330014br.gov.bcb.pix..." class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-solar-neon"></textarea>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Modo do Valor no QR Code PIX</label>
-                    <select id="cfg-pix-mode" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white font-semibold focus:outline-none">
-                        <option value="official_with_amount">Injetar Valor da Fatura/Mensalidade Automaticamente</option>
-                        <option value="official_exact">Usar Código PIX Oficial Exato (Sem valor fixo)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="flex gap-2 pt-2">
-                <button onclick="saveUnifiedConfig()" class="flex-1 py-3.5 bg-solar-neon text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider cursor-pointer">
-                    Salvar Todas as Configurações
+            <!-- Botões de Alternância (Cliente / Barbeiro) -->
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" id="btn-mode-client" onclick="switchView('client')" class="px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 text-black transition">
+                    Agendar
                 </button>
-                <button onclick="clearUnifiedConfig()" class="py-3.5 px-4 bg-red-500/15 text-red-400 border border-red-500/30 font-bold rounded-xl text-xs uppercase cursor-pointer">
-                    Limpar
+                <button type="button" id="btn-mode-barber" onclick="switchView('barber')" class="relative px-3 py-2 rounded-xl text-xs font-semibold bg-obsidian-800 text-zinc-300 hover:text-white border border-zinc-700/70 transition flex items-center gap-1.5">
+                    <i data-lucide="bell" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span>Barbeiro</span>
+                    <span id="unread-badge" class="hidden absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow">0</span>
                 </button>
             </div>
         </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-1 w-full max-w-2xl mx-auto px-3 sm:px-4 py-5">
+
+        <!-- ========================================================= -->
+        <!-- VISÃO 1: CLIENTE (AGENDAMENTO + CATÁLOGO FOTOS & VÍDEOS)  -->
+        <!-- ========================================================= -->
+        <section id="view-client" class="space-y-6 w-full">
+
+            <!-- Banner Boas-vindas -->
+            <div class="bg-gradient-to-r from-obsidian-900 via-obsidian-800 to-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="w-full sm:w-auto">
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-1.5">
+                        Atendimento Individual • Sem Fila
+                    </span>
+                    <h2 class="text-lg sm:text-xl font-bold text-white leading-snug">Marque seu horário rápido</h2>
+                    <p class="text-xs text-zinc-400 mt-1">Escolha o serviço, selecione um corte de referência e confirme no WhatsApp.</p>
+                </div>
+                <a href="#booking-form" class="w-full sm:w-auto text-center px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0">
+                    Ir para Horários
+                </a>
+            </div>
+
+            <!-- VITRINE DE CORTES (FOTOS E VÍDEOS DO BARBEIRO) -->
+            <div class="space-y-3 w-full">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+                            <i data-lucide="camera" class="w-4 h-4 text-amber-400 shrink-0"></i>
+                            <span>Fotos & Vídeos de Cortes</span>
+                        </h3>
+                        <p class="text-xs text-zinc-400">Toque em um modelo para escolher como referência.</p>
+                    </div>
+                    <!-- Filtro de mídia -->
+                    <div class="flex bg-obsidian-900 p-1 rounded-xl border border-zinc-800 text-xs shrink-0">
+                        <button type="button" onclick="filterPortfolio('all')" id="filter-all" class="px-2.5 py-1 rounded-lg bg-obsidian-700 text-white font-medium">Todos</button>
+                        <button type="button" onclick="filterPortfolio('photo')" id="filter-photo" class="px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white">Fotos</button>
+                        <button type="button" onclick="filterPortfolio('video')" id="filter-video" class="px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white">Vídeos</button>
+                    </div>
+                </div>
+
+                <!-- Grid de Mídia (2 colunas no celular, 3 no PC) -->
+                <div id="portfolio-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full">
+                    <!-- Renderizado via JS -->
+                </div>
+            </div>
+
+            <!-- FORMULÁRIO DE AGENDAMENTO (SEM ESCOLHA DE PROFISSIONAL) -->
+            <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-5 shadow-xl w-full">
+                <div class="border-b border-zinc-800 pb-3.5 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white">Agendar Horário</h3>
+                        <p class="text-xs text-zinc-400">Preencha os 4 passos abaixo.</p>
+                    </div>
+                    <span id="selected-style-badge" class="hidden px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-medium flex items-center gap-1.5 max-w-full">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 shrink-0"></i>
+                        <span id="selected-style-name" class="truncate">Estilo</span>
+                        <button type="button" onclick="clearSelectedStyle()" class="hover:text-white ml-1 font-bold">&times;</button>
+                    </span>
+                </div>
+
+                <!-- PASSO 1: ESCOLHA DO SERVIÇO -->
+                <div class="space-y-2.5">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
+                        1. Escolha o Serviço
+                    </label>
+                    <div id="services-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <!-- Renderizado via JS -->
+                    </div>
+                </div>
+
+                <!-- PASSO 2: DATA DO ATENDIMENTO -->
+                <div class="space-y-2.5">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
+                        2. Escolha o Dia
+                    </label>
+                    <div id="dates-strip" class="flex gap-2 overflow-x-auto pb-1.5 w-full">
+                        <!-- Dias gerados automaticamente via JS -->
+                    </div>
+                </div>
+
+                <!-- PASSO 3: HORÁRIO DISPONÍVEL -->
+                <div class="space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
+                            3. Horários Disponíveis
+                        </label>
+                        <span class="text-[11px] text-zinc-500 flex items-center gap-2 shrink-0">
+                            <span class="inline-block w-2 h-2 rounded-full bg-obsidian-700 border border-zinc-600"></span> Livre
+                            <span class="inline-block w-2 h-2 rounded-full bg-zinc-900 opacity-50"></span> Ocupado
+                        </span>
+                    </div>
+                    <div id="times-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                        <!-- Horários renderizados via JS -->
+                    </div>
+                </div>
+
+                <!-- PASSO 4: DADOS DO CLIENTE -->
+                <div class="space-y-3 pt-3 border-t border-zinc-800/80">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
+                        4. Seus Dados
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-zinc-300 mb-1">Seu Nome / Apelido *</label>
+                            <input type="text" id="client-name" required placeholder="Ex: João Silva"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-zinc-300 mb-1">Seu WhatsApp (com DDD) *</label>
+                            <input type="tel" id="client-phone" required placeholder="Ex: (62) 99999-9999"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-300 mb-1">Observação do Corte (Opcional)</label>
+                        <input type="text" id="client-notes" placeholder="Ex: Degradê navalhado na zero, acabamento quadrado..."
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
+                    </div>
+                </div>
+
+                <!-- RESUMO E BOTÃO FINAL -->
+                <div class="bg-obsidian-950 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-3">
+                    <div>
+                        <p class="text-[11px] text-zinc-400">Resumo do Agendamento:</p>
+                        <p id="booking-summary-text" class="text-xs sm:text-sm font-semibold text-white mt-0.5 break-words">Selecione serviço, dia e horário</p>
+                    </div>
+                    <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition cursor-pointer">
+                        <i data-lucide="message-circle" class="w-5 h-5 shrink-0"></i>
+                        <span>Confirmar & Enviar WhatsApp</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- VISÃO 2: APP DO BARBEIRO (NOTIFICAÇÕES + GESTÃO DE MÍDIA) -->
+        <!-- ========================================================= -->
+        <section id="view-barber" class="hidden space-y-5 w-full">
+
+            <!-- Cabeçalho do Painel do Barbeiro -->
+            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400">PAINEL DO BARBEIRO</span>
+                        <h2 class="text-lg font-bold text-white mt-1">Notificações & Agenda</h2>
+                    </div>
+                    <button type="button" onclick="simulateIncomingBooking()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold flex items-center gap-1.5 transition shrink-0">
+                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                        <span>Testar Alerta</span>
+                    </button>
+                </div>
+                <p class="text-xs text-zinc-400">Sempre que um cliente marcar horário, você recebe um alerta sonoro e visual aqui e o pedido chega no seu WhatsApp.</p>
+            </div>
+
+            <!-- Configuração do WhatsApp do Barbeiro -->
+            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i data-lucide="settings" class="w-4 h-4 text-amber-400 shrink-0"></i>
+                    <span>WhatsApp que Recebe os Pedidos</span>
+                </h3>
+                <div class="flex flex-col sm:flex-row gap-2.5">
+                    <input type="tel" id="barber-whatsapp-input" placeholder="55 + DDD + Número (Ex: 5562999999999)"
+                        class="w-full sm:flex-1 px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <button type="button" onclick="saveBarberWhatsApp()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0">
+                        Salvar Número
+                    </button>
+                </div>
+            </div>
+
+            <!-- AGENDA & NOTIFICAÇÕES RECEBIDAS -->
+            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3.5">
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                    <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="calendar-check" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Horários Marcados (<span id="bookings-count">0</span>)</span>
+                    </h3>
+                    <button type="button" onclick="clearAllBookings()" class="text-xs text-zinc-400 hover:text-red-400 transition">Limpar</button>
+                </div>
+                <div id="barber-bookings-list" class="space-y-3">
+                    <!-- Lista de agendamentos renderizada via JS -->
+                </div>
+            </div>
+
+            <!-- ADICIONAR FOTOS E VÍDEOS DE CORTES AO CATÁLOGO -->
+            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-4">
+                <div class="border-b border-zinc-800 pb-3">
+                    <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="film" class="w-4 h-4 text-amber-400"></i>
+                        <span>Publicar Fotos ou Vídeos de Cortes</span>
+                    </h3>
+                    <p class="text-xs text-zinc-400 mt-0.5">Adicione seus cortes para os clientes escolherem.</p>
+                </div>
+
+                <form onsubmit="handleAddMedia(event)" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-zinc-400 mb-1">Nome do Corte *</label>
+                            <input type="text" id="media-title" required placeholder="Ex: Degradê Navalhado"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-zinc-400 mb-1">Tipo de Mídia *</label>
+                            <select id="media-type" class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
+                                <option value="photo">Foto do Corte</option>
+                                <option value="video">Vídeo do Corte</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Link da Foto/Vídeo ou Galeria do Celular</label>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="url" id="media-url" placeholder="https://... (opcional se escolher arquivo)"
+                                class="w-full sm:flex-1 px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
+                            <label class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 border border-zinc-700 text-xs font-semibold text-zinc-200 flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
+                                <i data-lucide="upload" class="w-4 h-4 text-amber-400"></i>
+                                <span>Escolher Arquivo</span>
+                                <input type="file" id="media-file" accept="image/*,video/*" class="hidden" onchange="previewLocalFileName(this)">
+                            </label>
+                        </div>
+                        <p id="selected-file-label" class="text-[11px] text-amber-400 mt-1 hidden break-all"></p>
+                    </div>
+                    <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition">
+                        Publicar no Catálogo
+                    </button>
+                </form>
+
+                <!-- Lista para gerenciar/remover mídias publicadas -->
+                <div class="pt-3 border-t border-zinc-800">
+                    <p class="text-xs font-semibold text-zinc-400 mb-2.5">Itens Ativos no Catálogo:</p>
+                    <div id="barber-media-manager" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <!-- Renderizado via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL DE VISUALIZAÇÃO DE FOTO/VÍDEO -->
+    <div id="media-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm hidden items-center justify-center p-3">
+        <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="p-3.5 border-b border-zinc-800 flex items-center justify-between gap-2">
+                <h4 id="modal-media-title" class="text-sm font-bold text-white truncate">Detalhes do Corte</h4>
+                <button type="button" onclick="closeMediaModal()" class="p-1 text-zinc-400 hover:text-white shrink-0">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="modal-media-content" class="bg-black flex items-center justify-center max-h-[55vh] overflow-hidden">
+                <!-- Imagem ou vídeo injetado aqui -->
+            </div>
+            <div class="p-3.5 flex items-center justify-between gap-2 bg-obsidian-900">
+                <span class="text-xs text-zinc-400">Gostou desse corte?</span>
+                <button type="button" id="modal-select-cut-btn" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition shrink-0">
+                    Escolher Este Corte
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- MODAL DETALHES SERVIDOR PC (ABA SOLAR) -->
-    <div class="modal-overlay" id="solar-server-overlay" onclick="closeSolarServerModal()"></div>
-    <div class="bottom-sheet" id="solar-server-sheet">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-extrabold text-white">Servidor Django & Robô</h3>
-            <button onclick="closeSolarServerModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div id="solar-modal-server-banner" class="rounded-2xl p-4 mb-4 border border-white/10 bg-white/[0.04] text-center">
-            <span id="solar-modal-big-status" class="text-lg font-black uppercase text-amber-300">VERIFICANDO...</span>
-            <p id="solar-modal-server-desc" class="text-xs text-slate-300 mt-1">Consultando sinal...</p>
-        </div>
-        <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 space-y-2 text-xs mb-4">
-            <div class="flex justify-between"><span>Último Sinal:</span><strong id="srv-last-seen">--</strong></div>
-            <div class="flex justify-between"><span>Tempo Decorrido:</span><strong id="srv-elapsed" class="text-sky-300">--</strong></div>
-            <div class="flex justify-between"><span>Atividade:</span><strong id="srv-robo-activity">--</strong></div>
-            <div class="flex justify-between"><span>Faturas Pendentes:</span><strong id="srv-ucs-pending" class="text-amber-300">--</strong></div>
-        </div>
-        <button onclick="checkSolarServerHealth(true)" class="w-full py-3.5 bg-sky-500/20 border border-sky-400/40 text-sky-200 font-extrabold rounded-2xl text-xs uppercase">Atualizar Status Agora</button>
-    </div>
-
-    <!-- MODAL DETALHES FATURA SOLAR -->
-    <div class="modal-overlay" id="solar-modal-overlay" onclick="closeSolarInvoiceModal()"></div>
-    <div class="bottom-sheet" id="solar-bottom-sheet">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-start mb-4 gap-3">
-            <div>
-                <h3 id="solar-modal-cliente-nome" class="text-2xl font-extrabold capitalize text-white">Cliente</h3>
-                <p id="solar-modal-mes-sub" class="text-xs text-slate-400 mt-0.5">Fatura</p>
-                <p id="solar-modal-vencimento" class="text-xs font-semibold text-sky-300 mt-1">Vencimento: --</p>
+    <!-- MODAL DE CONFIRMAÇÃO DE AGENDAMENTO + WHATSAPP -->
+    <div id="success-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-3">
+        <div class="bg-obsidian-900 border border-emerald-500/40 rounded-2xl w-full max-w-md p-5 text-center space-y-4 shadow-2xl">
+            <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+                <i data-lucide="check-circle-2" class="w-7 h-7"></i>
             </div>
-            <div class="flex items-center gap-2">
-                <span id="solar-modal-status" class="text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">STATUS</span>
-                <button onclick="closeSolarInvoiceModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-lg font-bold text-white">Horário Reservado!</h3>
+            <p class="text-xs text-zinc-300 leading-relaxed">
+                O alerta já foi enviado para o aplicativo do barbeiro. Agora clique abaixo para enviar a confirmação no <strong>WhatsApp</strong> dele.
+            </p>
+            <div id="success-details-box" class="bg-obsidian-950 border border-zinc-800 rounded-xl p-3 text-left text-xs text-zinc-300 space-y-1 break-words">
+                <!-- Detalhes preenchidos via JS -->
             </div>
-        </div>
-        <div id="solar-modal-body" class="space-y-3 mb-4 text-xs">
-            <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 space-y-2">
-                <div class="flex justify-between"><span>Consumo Medido:</span><strong id="solar-m-kwh">0 kWh</strong></div>
-                <div class="flex justify-between"><span>Valor Energia (R$ 0,81/kWh):</span><strong id="solar-m-ckwh">R$ 0,00</strong></div>
-                <div class="flex justify-between"><span>Iluminação Pública (CIP):</span><strong id="solar-m-cip">R$ 0,00</strong></div>
-                <div class="flex justify-between text-slate-400 border-t border-white/10 pt-2"><span>Sem Desconto:</span><span id="solar-m-bruto" class="line-through text-red-400">R$ 0,00</span></div>
-                <div class="flex justify-between text-emerald-400"><span>Desconto (20% OFF):</span><strong id="solar-m-desc">- R$ 0,00</strong></div>
-                <div class="flex justify-between text-sm font-extrabold border-t border-white/15 pt-2"><span>Valor a Pagar:</span><span id="solar-m-fat" class="text-amber-300">R$ 0,00</span></div>
+            <div class="flex flex-col gap-2 pt-1">
+                <a id="whatsapp-direct-link" href="#" target="_blank" rel="noopener noreferrer"
+                    class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    <span>Enviar no WhatsApp Agora</span>
+                </a>
+                <button type="button" onclick="closeSuccessModal()" class="w-full py-2 rounded-xl text-xs text-zinc-400 hover:text-white transition">
+                    Fechar
+                </button>
             </div>
-            <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 space-y-2">
-                <div class="flex justify-between"><span>Custo Geração Usina:</span><strong id="solar-m-cusina" class="text-red-400">- R$ 0,00</strong></div>
-                <div class="flex justify-between font-bold border-t border-white/10 pt-2"><span>Custo Total Usina:</span><span id="solar-m-ctotal" class="text-red-400">- R$ 0,00</span></div>
-            </div>
-        </div>
-        <div class="bg-emerald-500/15 border border-emerald-400/40 rounded-2xl p-4 text-center mb-4">
-            <span class="text-[11px] text-emerald-400 font-bold uppercase block">Seu Lucro Líquido Final</span>
-            <span id="solar-m-lucro" class="tabular-nums text-3xl font-black text-solar-neon">R$ 0,00</span>
-        </div>
-        <div id="solar-m-actions" class="grid grid-cols-1 gap-2">
-            <button id="solar-btn-wpp" class="w-full py-3.5 bg-[#25D366] text-slate-950 font-black rounded-2xl text-xs uppercase flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp text-base"></i><span>Enviar Fatura PNG + Mensagem</span></button>
-            <button id="solar-btn-dl" class="w-full py-3 bg-white/10 text-white font-bold rounded-2xl text-xs uppercase flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i><span>Apenas Baixar PNG</span></button>
         </div>
     </div>
 
-    <!-- MODAL NOVO CLIENTE FLOWNEST -->
-    <div class="modal-overlay" id="fn-new-overlay" onclick="closeFnNewClientModal()"></div>
-    <div class="bottom-sheet" id="fn-new-sheet">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-extrabold text-white">Cadastrar Cliente FlowNest (IA)</h3>
-            <button onclick="closeFnNewClientModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <form id="fn-new-form" onsubmit="submitFnNewClient(event)" class="space-y-3 text-xs">
-            <div class="grid grid-cols-2 gap-2.5">
-                <div><label class="block font-bold text-solar-neon uppercase mb-1">Nome / Login *</label><input type="text" id="fn-new-nome" required class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-white"></div>
-                <div><label class="block font-bold text-slate-300 uppercase mb-1">Empresa</label><input type="text" id="fn-new-empresa" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-white"></div>
-            </div>
-            <div class="grid grid-cols-2 gap-2.5">
-                <div><label class="block font-bold text-slate-300 uppercase mb-1">Responsável</label><input type="text" id="fn-new-resp" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-white"></div>
-                <div><label class="block font-bold text-slate-300 uppercase mb-1">WhatsApp</label><input type="tel" id="fn-new-tel" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-white"></div>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-                <div><label class="block font-bold text-slate-300 uppercase mb-1">Dia Venc.</label><input type="number" id="fn-new-dia" min="1" max="31" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2 text-white"></div>
-                <div><label class="block font-bold text-slate-300 uppercase mb-1">Valor (R$)</label><input type="number" id="fn-new-valor" step="0.01" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2 text-solar-neon font-bold"></div>
-                <div><label class="block font-bold text-slate-300 uppercase mb-1">Status</label><select id="fn-new-status" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-2 py-2 text-emerald-400 font-bold"><option value="ATIVO">ATIVO</option><option value="OFF">OFF</option></select></div>
-            </div>
-            <button type="submit" id="fn-btn-submit-new" class="w-full py-3.5 bg-solar-neon text-slate-950 font-black rounded-2xl uppercase">Cadastrar na Planilha</button>
-        </form>
-    </div>
+    <!-- RODAPÉ -->
+    <footer class="border-t border-zinc-900 py-4 text-center text-[11px] text-zinc-500 px-3">
+        <p>Secreta Barber © 2026 • Agendamento Online</p>
+    </footer>
 
-    <!-- MODAL EDITAR ASSINANTE FLOWNEST -->
-    <div class="modal-overlay" id="fn-edit-overlay" onclick="closeFnEditModal()"></div>
-    <div class="bottom-sheet" id="fn-edit-sheet">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-start mb-4">
-            <div>
-                <h3 id="fn-edit-nome" class="text-2xl font-extrabold text-white">Assinante</h3>
-                <p id="fn-edit-empresa" class="text-xs text-slate-400">FlowNest(IA)</p>
-            </div>
-            <button onclick="closeFnEditModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="grid grid-cols-2 gap-2.5 mb-4">
-            <button id="fn-edit-btn-ativar" class="py-3 rounded-xl font-black text-xs uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/50">Ativar (ATIVO)</button>
-            <button id="fn-edit-btn-off" class="py-3 rounded-xl font-black text-xs uppercase bg-red-500/20 text-red-300 border border-red-500/50">Bloquear (OFF)</button>
-        </div>
-        <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 space-y-3 mb-4 text-xs">
-            <div class="grid grid-cols-2 gap-3">
-                <div><label class="block font-bold text-slate-300 uppercase mb-1">Dia Vencimento</label><input type="number" id="fn-edit-dia" min="1" max="31" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-white font-bold"></div>
-                <div><label class="block font-bold text-slate-300 uppercase mb-1">Mensalidade (R$)</label><input type="number" id="fn-edit-valor" step="0.01" class="w-full bg-[#090f22] border border-white/20 rounded-xl px-3 py-2.5 text-solar-neon font-bold"></div>
-            </div>
-            <button id="fn-edit-btn-salvar" class="w-full py-3 bg-sky-500 text-slate-950 font-black rounded-xl uppercase">Salvar Alterações</button>
-        </div>
-        <div class="grid grid-cols-1 gap-2">
-            <button id="fn-edit-btn-wpp" class="w-full py-3.5 bg-[#25D366] text-slate-950 font-black rounded-2xl text-xs uppercase flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp text-base"></i><span>Enviar Cobrança PNG + Mensagem</span></button>
-            <button id="fn-edit-btn-dl" class="w-full py-3 bg-white/10 text-white font-bold rounded-2xl text-xs uppercase">Apenas Baixar PNG</button>
-            <button id="fn-edit-btn-remover" class="w-full py-3 bg-red-500/15 border border-red-500/40 text-red-400 font-extrabold rounded-2xl text-xs uppercase">Remover Assinante</button>
-        </div>
-    </div>
-
-    <!-- MODAIS DO MAPA 3D -->
-    <div class="modal-overlay" id="map-modal-overlay" onclick="closeMapModals()"></div>
-
-    <!-- Modal Senha Empresário Mapa -->
-    <div class="bottom-sheet" id="modalAuth">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-extrabold">Área Restrita (Empresário)</h3>
-            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
-        </div>
-        <input type="password" id="adminPasswordInput" placeholder="Digite sua senha (1234)..." class="w-full bg-[#090f22] border border-white/15 rounded-xl px-4 py-3 text-base text-white mb-3">
-        <button id="btnCheckAuth" class="w-full py-3.5 bg-blue-600 text-white font-extrabold rounded-xl">Acessar Modo Empresário</button>
-    </div>
-
-    <!-- Modal Visitante Mapa -->
-    <div class="bottom-sheet" id="modalPublicView">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-center mb-4">
-            <h3 id="pubTitle" class="text-lg font-extrabold">Detalhes do Ponto</h3>
-            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
-        </div>
-        <div class="bg-[#090f22] border border-white/10 rounded-2xl p-4 mb-3">
-            <div id="pubTypeLabel" class="text-xs font-extrabold text-slate-400 uppercase">INFORMAÇÃO</div>
-            <div id="pubName" class="text-xl font-extrabold text-white mt-1">-</div>
-            <div id="pubKwh" class="text-base font-bold text-amber-400 mt-2">-</div>
-        </div>
-        <button id="btnPubMaps" class="w-full py-3.5 bg-emerald-500 text-slate-950 font-extrabold rounded-xl flex items-center justify-center gap-2"><i data-lucide="navigation" class="w-4 h-4"></i> Abrir no Google Maps</button>
-    </div>
-
-    <!-- Modal Cadastro / Edição Ponto Mapa -->
-    <div class="bottom-sheet" id="modalForm">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-center mb-4">
-            <h3 id="formTitle" class="text-lg font-extrabold">Novo Cadastro</h3>
-            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
-        </div>
-
-        <div class="map-type-selector">
-            <div class="map-type-btn active" data-type="usina"><i data-lucide="sun" class="w-4 h-4"></i> Usina</div>
-            <div class="map-type-btn" data-type="cliente"><i data-lucide="zap" class="w-4 h-4"></i> Cliente Solar</div>
-            <div class="map-type-btn" data-type="aluguel"><i data-lucide="home" class="w-4 h-4"></i> Imóvel</div>
-            <div class="map-type-btn" data-type="software"><i data-lucide="cpu" class="w-4 h-4"></i> FlowNest (IA)</div>
-        </div>
-
-        <input type="hidden" id="pointId"><input type="hidden" id="pointLat"><input type="hidden" id="pointLng">
-
-        <div class="space-y-3 text-xs">
-            <div><label id="lblName" class="block font-bold text-slate-400 uppercase mb-1">Nome do Ponto</label><input type="text" id="pointName" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white"></div>
-
-            <div id="locationTypeGroup"><label class="block font-bold text-slate-400 uppercase mb-1">Localização</label>
-                <select id="pointLocationType" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white">
-                    <option value="urbana">Urbana (Iluminação Pública R$ 21,00)</option>
-                    <option value="rural">Rural (Isento Iluminação Pública)</option>
-                </select>
-            </div>
-
-            <div id="ownershipGroup"><label class="block font-bold text-slate-400 uppercase mb-1">Propriedade</label>
-                <select id="pointOwnership" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white">
-                    <option value="Proprio">100% Próprio</option>
-                    <option value="Sociedade">Sociedade (Com Sócio/Sogro)</option>
-                </select>
-            </div>
-
-            <div id="usinaSourceGroup" style="display:none;"><label class="block font-bold text-slate-400 uppercase mb-1">Usina Fornecedora</label>
-                <select id="pointSourceUsina" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white"></select>
-            </div>
-
-            <div id="financeCalcCard" style="display:none;" class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3.5 space-y-1.5">
-                <div class="font-extrabold text-emerald-400 uppercase">📊 Demonstrativo Financeiro</div>
-                <div class="flex justify-between"><span>Faturamento Bruto:</span><strong id="calcBruto">R$ 0,00</strong></div>
-                <div class="flex justify-between"><span>Custo Produção (0,17/kWh):</span><strong id="calcCustoProd">R$ 0,00</strong></div>
-                <div class="flex justify-between"><span>Iluminação Pública:</span><strong id="calcIlum">R$ 0,00</strong></div>
-                <div class="flex justify-between text-sm font-extrabold text-solar-neon border-t border-white/10 pt-1.5"><span>Lucro Líquido:</span><strong id="calcLucro">R$ 0,00</strong></div>
-            </div>
-
-            <div class="flex gap-2.5">
-                <div id="kwhGroup" class="flex-1"><label id="lblKwh" class="block font-bold text-slate-400 uppercase mb-1">kWh / Mês</label><input type="number" id="pointKwh" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white"></div>
-                <div id="valGroup" class="flex-1"><label id="lblVal" class="block font-bold text-slate-400 uppercase mb-1">Valor / Desc.</label><input type="number" id="pointVal" value="20" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white"></div>
-            </div>
-
-            <div id="rentalStatusGroup" style="display:none;"><label id="lblStatus" class="block font-bold text-slate-400 uppercase mb-1">Status</label>
-                <select id="pointStatus" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-3 text-base text-white"></select>
-            </div>
-
-            <div><label class="block font-bold text-slate-400 uppercase mb-1">Observações</label><textarea id="pointNotes" rows="2" class="w-full bg-[#090f22] border border-white/15 rounded-xl px-3.5 py-2.5 text-base text-white"></textarea></div>
-
-            <button id="btnSavePoint" class="w-full py-3.5 bg-blue-600 text-white font-extrabold rounded-xl text-sm">Salvar Localmente e na Planilha</button>
-            <button id="btnFormMaps" class="w-full py-3 bg-emerald-500 text-slate-950 font-extrabold rounded-xl text-sm flex items-center justify-center gap-2"><i data-lucide="navigation" class="w-4 h-4"></i> Abrir no Google Maps</button>
-            <button id="btnDeletePoint" style="display:none;" class="w-full py-3 bg-red-500/15 border border-red-500/30 text-red-400 font-bold rounded-xl text-sm">Excluir Ponto</button>
-        </div>
-    </div>
-
-    <!-- Modal Gestão Mapa -->
-    <div class="bottom-sheet" id="modalGestaoView">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-center mb-4">
-            <h3 id="gestaoClientName" class="text-lg font-extrabold">Faturamento do Cliente</h3>
-            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
-        </div>
-        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 space-y-2 text-xs mb-4">
-            <div class="flex justify-between"><span>Consumo:</span><strong id="gConsumo">0 kWh</strong></div>
-            <div class="flex justify-between"><span>Usina:</span><strong id="gUsina">-</strong></div>
-            <div class="flex justify-between"><span>Localização:</span><strong id="gLocal">Urbana</strong></div>
-            <div class="flex justify-between border-t border-white/10 pt-2"><span>Faturamento Bruto:</span><strong id="gBruto" class="text-sky-400">R$ 0,00</strong></div>
-            <div class="flex justify-between"><span>Custo Produção:</span><strong id="gCustoProd" class="text-red-400">R$ 0,00</strong></div>
-            <div class="flex justify-between"><span>Iluminação Pública:</span><strong id="gIlum" class="text-red-400">R$ 0,00</strong></div>
-            <div class="flex justify-between text-base font-black text-solar-neon border-t border-white/10 pt-2"><span>LUCRO LÍQUIDO:</span><strong id="gLucro">R$ 0,00</strong></div>
-        </div>
-        <div class="space-y-2">
-            <button id="btnGestaoEditDirect" class="w-full py-3 bg-white/10 text-white font-bold rounded-xl text-xs uppercase">Editar Informações</button>
-            <button id="btnGestaoMaps" class="w-full py-3.5 bg-emerald-500 text-slate-950 font-extrabold rounded-xl text-xs uppercase flex items-center justify-center gap-2"><i data-lucide="navigation" class="w-4 h-4"></i> Abrir no Google Maps</button>
-        </div>
-    </div>
-
-    <!-- Modal Lista Separada por Usinas e Categorias -->
-    <div class="bottom-sheet" id="modalList">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-extrabold">Pontos Cadastrados</h3>
-            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
-        </div>
-        <div id="pointsContainer"></div>
-    </div>
-
-    <!-- Modal Resumo Consolidado Mapa -->
-    <div class="bottom-sheet" id="modalSummary">
-        <div class="modal-pill"></div>
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-extrabold">Balanço Geral (Mapa)</h3>
-            <button onclick="closeMapModals()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
-        </div>
-        <div id="summaryContent" class="text-xs"></div>
-    </div>
-
+    <!-- LÓGICA COMPLETA E VERIFICADA -->
     <script>
-        /* =====================================================================
-           CHAVES DE ARMAZENAMENTO UNIFICADAS (LOCALSTORAGE)
-           ===================================================================== */
-        const KEYS = {
-            SOLAR_SHEET_ID: 'solarinvest_sheet_id',
-            SOLAR_GITHUB_REPO: 'solarinvest_github_monitor_repo',
-            FN_APPSCRIPT_URL: 'flownest_appscript_url_v1',
-            KB_APPSCRIPT_URL: 'flownest_kb_appscript_url_v1',
-            FN_PORTAL_URL: 'flownest_portal_url_v1',
-            MAP_SHEET_URL: 'solar_sheet_url',
-            MAP_DB: 'solar_db',
-            MAP_QUEUE: 'solar_pending_queue',
-            MAP_VIEWPORT: 'solar_map_viewport',
-            PIX_CODE: 'unified_pix_code_v1',
-            PIX_MODE: 'unified_pix_mode_v1'
-        };
+        // ==========================================
+        // 1. DADOS INICIAIS E ESTADO DA APLICAÇÃO
+        // ==========================================
+        const DEFAULT_SERVICES = [
+            { id: 'srv_1', name: 'Corte Degradê / Social', price: 'R$ 35,00', duration: '40 min', desc: 'Acabamento na navalha' },
+            { id: 'srv_2', name: 'Corte + Barba Completa', price: 'R$ 55,00', duration: '60 min', desc: 'Toalha quente e alinhamento' },
+            { id: 'srv_3', name: 'Barba Terapia', price: 'R$ 25,00', duration: '30 min', desc: 'Modelagem e hidratação' },
+            { id: 'srv_4', name: 'Pezinho & Sobrancelha', price: 'R$ 20,00', duration: '20 min', desc: 'Acabamento preciso' }
+        ];
 
-        const DEFAULT_PIX = '00020126330014br.gov.bcb.pix0111709573141165204000053039865802BR5925Jose Elvecio Lopes Junior6009Sao Paulo62230519daqr2210911956886966304DDE3';
-        const DEFAULT_REPO = 'junim887876/Aposta';
-        const SOLAR_PORTAL_URL = 'https://junim887876.github.io/Energia/';
+        const TIME_SLOTS = [
+            '09:00', '09:45', '10:30', '11:15',
+            '13:30', '14:15', '15:00', '15:45',
+            '16:30', '17:15', '18:00', '18:45'
+        ];
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast-notification');
-            document.getElementById('toast-text').innerText = msg;
-            toast.classList.add('show');
-            clearTimeout(window._toastTimer);
-            window._toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
-        }
-
-        function escapeHtml(str) {
-            return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        }
-
-        function openSheetModal(overlayId, sheetId) {
-            const overlay = document.getElementById(overlayId);
-            const sheet = document.getElementById(sheetId);
-            overlay.style.display = 'block';
-            requestAnimationFrame(() => {
-                overlay.style.opacity = '1';
-                sheet.style.transform = 'translate(-50%, 0)';
-            });
-        }
-
-        function closeSheetModal(overlayId, sheetId) {
-            const overlay = document.getElementById(overlayId);
-            const sheet = document.getElementById(sheetId);
-            sheet.style.transform = 'translate(-50%, 100%)';
-            overlay.style.opacity = '0';
-            setTimeout(() => { overlay.style.display = 'none'; }, 300);
-        }
-
-        /* =====================================================================
-           NAVEGAÇÃO ENTRE AS 3 ABAS (SOLAR / FLOW-NEST / MAPA 3D)
-           ===================================================================== */
-        let activeMainTab = 'solar';
-        let mapInitialized = false;
-
-        function switchMainTab(tabName) {
-            activeMainTab = tabName;
-            document.querySelectorAll('.main-tab-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.tab === tabName);
-            });
-
-            document.getElementById('view-solar').style.display = (tabName === 'solar') ? 'flex' : 'none';
-            document.getElementById('view-software').style.display = (tabName === 'software') ? 'flex' : 'none';
-            document.getElementById('view-mapa').style.display = (tabName === 'mapa') ? 'block' : 'none';
-
-            if (tabName === 'mapa' && map) {
-                setTimeout(() => {
-                    map.resize();
-                    renderMarkers();
-                }, 60);
+        const DEFAULT_PORTFOLIO = [
+            {
+                id: 'm_1',
+                title: 'Mid Fade Navalhado',
+                type: 'photo',
+                url: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: 'm_2',
+                title: 'Corte + Barba Alinhada',
+                type: 'photo',
+                url: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: 'm_3',
+                title: 'Degradê Americano (Vídeo)',
+                type: 'video',
+                url: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=600&q=80'
             }
+        ];
+
+        // Carregamento seguro do localStorage
+        let barberWhatsApp = localStorage.getItem('sb_whatsapp') || '5562999999999';
+        let bookings = [];
+        let portfolioItems = [];
+
+        try {
+            bookings = JSON.parse(localStorage.getItem('sb_bookings')) || [];
+        } catch (e) {
+            bookings = [];
         }
 
-        /* =====================================================================
-           MODAL CENTRALIZADO DA ENGRENAGEM (TODAS AS CONFIGURAÇÕES)
-           ===================================================================== */
-        function extractSheetId(input) {
-            if (!input) return '';
-            const match = input.match(/\/d\/([a-zA-Z0-9-_]+)/);
-            return match ? match[1] : input.trim();
+        try {
+            const savedMedia = JSON.parse(localStorage.getItem('sb_portfolio'));
+            portfolioItems = (Array.isArray(savedMedia) && savedMedia.length > 0) ? savedMedia : DEFAULT_PORTFOLIO;
+        } catch (e) {
+            portfolioItems = DEFAULT_PORTFOLIO;
         }
 
-        function openUnifiedConfigModal() {
-            document.getElementById('cfg-solar-sheet-id').value = localStorage.getItem(KEYS.SOLAR_SHEET_ID) || '';
-            document.getElementById('cfg-solar-github-repo').value = localStorage.getItem(KEYS.SOLAR_GITHUB_REPO) || DEFAULT_REPO;
-            document.getElementById('cfg-fn-appscript-url').value = localStorage.getItem(KEYS.FN_APPSCRIPT_URL) || '';
-            document.getElementById('cfg-kb-appscript-url').value = localStorage.getItem(KEYS.KB_APPSCRIPT_URL) || '';
-            document.getElementById('cfg-fn-portal-url').value = localStorage.getItem(KEYS.FN_PORTAL_URL) || '';
-            document.getElementById('cfg-map-sheet-url').value = localStorage.getItem(KEYS.MAP_SHEET_URL) || '';
-            document.getElementById('cfg-pix-code').value = localStorage.getItem(KEYS.PIX_CODE) || localStorage.getItem('solarinvest_pix_code_v2') || DEFAULT_PIX;
-            document.getElementById('cfg-pix-mode').value = localStorage.getItem(KEYS.PIX_MODE) || 'official_with_amount';
+        let selectedService = DEFAULT_SERVICES[0];
+        let selectedDate = null;
+        let selectedTime = null;
+        let selectedCutStyle = null;
+        let currentMediaFilter = 'all';
+        let unreadNotifications = 0;
 
-            openSheetModal('unified-config-overlay', 'unified-config-sheet');
-        }
+        // ==========================================
+        // 2. INICIALIZAÇÃO AO CARREGAR A PÁGINA
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('barber-whatsapp-input').value = barberWhatsApp;
+            generateNextDays();
+            renderServices();
+            renderTimes();
+            renderPortfolio();
+            renderBarberBookings();
+            renderBarberMediaManager();
+            updateSummary();
+            if (window.lucide) lucide.createIcons();
+        });
 
-        function closeUnifiedConfigModal() {
-            closeSheetModal('unified-config-overlay', 'unified-config-sheet');
-        }
-
-        function saveUnifiedConfig() {
-            const solarId = extractSheetId(document.getElementById('cfg-solar-sheet-id').value);
-            const repo = document.getElementById('cfg-solar-github-repo').value.trim();
-            const fnUrl = document.getElementById('cfg-fn-appscript-url').value.trim();
-            const kbUrl = document.getElementById('cfg-kb-appscript-url').value.trim();
-            const fnPortal = document.getElementById('cfg-fn-portal-url').value.trim();
-            const mapUrl = document.getElementById('cfg-map-sheet-url').value.trim();
-            const pixCode = document.getElementById('cfg-pix-code').value.trim() || DEFAULT_PIX;
-            const pixMode = document.getElementById('cfg-pix-mode').value;
-
-            if (solarId) localStorage.setItem(KEYS.SOLAR_SHEET_ID, solarId); else localStorage.removeItem(KEYS.SOLAR_SHEET_ID);
-            if (repo) localStorage.setItem(KEYS.SOLAR_GITHUB_REPO, repo);
-            if (fnUrl) localStorage.setItem(KEYS.FN_APPSCRIPT_URL, fnUrl); else localStorage.removeItem(KEYS.FN_APPSCRIPT_URL);
-            if (kbUrl) localStorage.setItem(KEYS.KB_APPSCRIPT_URL, kbUrl); else localStorage.removeItem(KEYS.KB_APPSCRIPT_URL);
-            if (fnPortal) localStorage.setItem(KEYS.FN_PORTAL_URL, fnPortal); else localStorage.removeItem(KEYS.FN_PORTAL_URL);
-            if (mapUrl) localStorage.setItem(KEYS.MAP_SHEET_URL, mapUrl); else localStorage.removeItem(KEYS.MAP_SHEET_URL);
-
-            localStorage.setItem(KEYS.PIX_CODE, pixCode);
-            localStorage.setItem(KEYS.PIX_MODE, pixMode);
-
-            scriptUrl = mapUrl;
-            closeUnifiedConfigModal();
-            showToast('Configurações salvas! Atualizando módulos...');
-
-            if (solarId) loadSolarAdminData();
-            checkSolarServerHealth(false);
-            if (fnUrl) loadFlowNestData(false);
-            syncKbEsteticaStatus();
-            if (mapUrl && navigator.onLine) syncMapFromSheet(true);
-        }
-
-        function clearUnifiedConfig() {
-            if (confirm('Deseja apagar todas as URLs e IDs de planilhas salvos neste navegador?')) {
-                Object.values(KEYS).forEach(k => {
-                    if (k !== KEYS.MAP_DB) localStorage.removeItem(k);
-                });
-                location.reload();
-            }
-        }
-
-        /* =====================================================================
-           GERADOR DE PIX & CRC16 COMPARTILHADO (SOLAR + FLOWNEST)
-           ===================================================================== */
-        function calculateCRC16(payloadWithoutCrc) {
-            let crc = 0xFFFF;
-            for (let i = 0; i < payloadWithoutCrc.length; i++) {
-                crc ^= payloadWithoutCrc.charCodeAt(i) << 8;
-                for (let j = 0; j < 8; j++) {
-                    crc = ((crc & 0x8000) !== 0) ? (((crc << 1) ^ 0x1021) & 0xFFFF) : ((crc << 1) & 0xFFFF);
-                }
-            }
-            return crc.toString(16).toUpperCase().padStart(4, '0');
-        }
-
-        function getFinalPixPayload(amount, forceExact = false) {
-            const basePix = (localStorage.getItem(KEYS.PIX_CODE) || DEFAULT_PIX).trim();
-            const mode = forceExact ? 'official_exact' : (localStorage.getItem(KEYS.PIX_MODE) || 'official_with_amount');
-            if (mode === 'official_exact' || !amount || amount <= 0) return basePix;
-
+        // ==========================================
+        // 3. SOM DE NOTIFICAÇÃO VIA TONE.JS
+        // ==========================================
+        async function playNotificationChime() {
             try {
-                let idx = 0;
-                const tags = [];
-                while (idx < basePix.length - 4) {
-                    const id = basePix.substring(idx, idx + 2);
-                    const len = parseInt(basePix.substring(idx + 2, idx + 4), 10);
-                    if (isNaN(len)) return basePix;
-                    const val = basePix.substring(idx + 4, idx + 4 + len);
-                    if (id !== '63' && id !== '54') tags.push({ id, val });
-                    idx += 4 + len;
+                if (typeof Tone !== 'undefined') {
+                    await Tone.start();
+                    const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+                    synth.volume.value = -6;
+                    const now = Tone.now();
+                    synth.triggerAttackRelease("E5", "16n", now);
+                    synth.triggerAttackRelease("G#5", "16n", now + 0.12);
+                    synth.triggerAttackRelease("B5", "8n", now + 0.24);
                 }
-                const amountStr = amount.toFixed(2);
-                let rebuilt = '';
-                let inserted = false;
-                for (const t of tags) {
-                    if (!inserted && parseInt(t.id, 10) > 54) {
-                        rebuilt += `54${String(amountStr.length).padStart(2, '0')}${amountStr}`;
-                        inserted = true;
-                    }
-                    rebuilt += `${t.id}${String(t.val.length).padStart(2, '0')}${t.val}`;
-                }
-                rebuilt += '6304';
-                return rebuilt + calculateCRC16(rebuilt);
             } catch (e) {
-                return basePix;
+                // Ignora bloqueio de áudio automático
             }
         }
 
-        function roundRectPath(ctx, x, y, w, h, r) {
-            if (typeof r === 'number') r = { tl: r, tr: r, br: r, bl: r };
-            ctx.beginPath();
-            ctx.moveTo(x + r.tl, y);
-            ctx.lineTo(x + w - r.tr, y);
-            ctx.quadraticCurveTo(x + w, y, x + w, y + r.tr);
-            ctx.lineTo(x + w, y + h - r.br);
-            ctx.quadraticCurveTo(x + w, y + h, x + w - r.br, y + h);
-            ctx.lineTo(x + r.bl, y + h);
-            ctx.quadraticCurveTo(x, y + h, x, y + h - r.bl);
-            ctx.lineTo(x, y + r.tl);
-            ctx.quadraticCurveTo(x, y, x + r.tl, y);
-            ctx.closePath();
+        // ==========================================
+        // 4. NAVEGAÇÃO ENTRE CLIENTE E BARBEIRO
+        // ==========================================
+        function switchView(mode) {
+            const clientView = document.getElementById('view-client');
+            const barberView = document.getElementById('view-barber');
+            const btnClient = document.getElementById('btn-mode-client');
+            const btnBarber = document.getElementById('btn-mode-barber');
+
+            if (mode === 'client') {
+                clientView.classList.remove('hidden');
+                barberView.classList.add('hidden');
+                btnClient.className = 'px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 text-black transition';
+                btnBarber.className = 'relative px-3 py-2 rounded-xl text-xs font-semibold bg-obsidian-800 text-zinc-300 hover:text-white border border-zinc-700/70 transition flex items-center gap-1.5';
+            } else {
+                clientView.classList.add('hidden');
+                barberView.classList.remove('hidden');
+                btnBarber.className = 'relative px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 text-black transition flex items-center gap-1.5';
+                btnClient.className = 'px-3 py-2 rounded-xl text-xs font-semibold bg-obsidian-800 text-zinc-300 hover:text-white border border-zinc-700/70 transition';
+                
+                unreadNotifications = 0;
+                updateUnreadBadge();
+                renderBarberBookings();
+            }
+            if (window.lucide) lucide.createIcons();
         }
 
-        function triggerBlobDownload(blob, fileName) {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(() => URL.revokeObjectURL(url), 4000);
+        function updateUnreadBadge() {
+            const badge = document.getElementById('unread-badge');
+            if (unreadNotifications > 0) {
+                badge.textContent = unreadNotifications;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
         }
 
-        /* =====================================================================
-           MÓDULO 1: ENERGIA SOLAR (SOLAR INVEST)
-           ===================================================================== */
-        const TARIFA_KWH = 0.81;
-        const CUSTO_KWH_USINA = 0.176411;
-        const NATIVE_MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-        const HEADER_WORDS = ['cliente', 'clientkey', 'nome', 'usuario', 'usuário', 'user', 'cip', 'consumo', 'mês', 'mes', 'status', 'vencimento', 'dia'];
-        const AVATAR_COLORS = ['bg-blue-600 text-white', 'bg-violet-600 text-white', 'bg-teal-600 text-white', 'bg-amber-500 text-white', 'bg-emerald-600 text-white', 'bg-purple-600 text-white', 'bg-green-600 text-white', 'bg-orange-500 text-white'];
-
-        let globalSolarInvoices = [];
-        let globalSolarClients = [];
-        let globalSolarVencMap = {};
-        let globalSolarPassMap = {};
-        let currentSolarCards = [];
-
-        async function checkSolarServerHealth(manual = false) {
-            const repo = (localStorage.getItem(KEYS.SOLAR_GITHUB_REPO) || DEFAULT_REPO).trim();
-            const jsonUrl = `https://raw.githubusercontent.com/${repo}/main/status.json?t=${Date.now()}`;
-            const pill = document.getElementById('solar-server-pill');
-            const ping = document.getElementById('solar-led-ping');
-            const dot = document.getElementById('solar-led-dot');
-            const label = document.getElementById('solar-status-label');
-            const sub = document.getElementById('solar-status-sub');
-
-            if (manual) showToast('Verificando servidor PC...');
-
-            try {
-                const res = await fetch(jsonUrl, { cache: 'no-store' });
-                if (!res.ok) throw new Error('Sem arquivo');
-                const data = await res.json();
-                const lastSignal = new Date(data.timestamp);
-                const diffMinutes = Math.max(0, Math.floor((new Date() - lastSignal) / 60000));
-                const isOnline = (diffMinutes <= 135) && (data.django_ok === true);
-
-                let elapsed = diffMinutes < 1 ? 'Agora' : (diffMinutes < 60 ? `há ${diffMinutes}m` : `há ${Math.floor(diffMinutes/60)}h`);
-                document.getElementById('srv-last-seen').innerText = data.hora_local_pc || lastSignal.toLocaleString('pt-BR');
-                document.getElementById('srv-elapsed').innerText = `${diffMinutes} min (${elapsed})`;
-                document.getElementById('srv-robo-activity').innerText = data.status_robo || 'Operando';
-                document.getElementById('srv-ucs-pending').innerText = data.ucs_pendentes !== undefined ? `${data.ucs_pendentes} UCs` : '--';
-
-                if (isOnline) {
-                    pill.className = 'server-pill-online rounded-2xl px-3.5 py-2 flex items-center gap-2.5 cursor-pointer';
-                    ping.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80';
-                    dot.className = 'relative inline-flex rounded-full h-3 w-3 led-glow-green';
-                    label.className = 'block text-[11px] font-extrabold uppercase text-solar-neon leading-none';
-                    label.innerText = 'SERVIDOR ONLINE';
-                    sub.innerText = `Sinal ${elapsed}`;
-                    document.getElementById('solar-modal-big-status').innerText = '● SERVIDOR ONLINE';
-                    document.getElementById('solar-modal-big-status').className = 'text-lg font-black uppercase text-solar-neon';
-                    document.getElementById('solar-modal-server-desc').innerText = 'Computador local e robô operando normalmente.';
+        // ==========================================
+        // 5. CATÁLOGO DE FOTOS E VÍDEOS DE CORTES
+        // ==========================================
+        function filterPortfolio(type) {
+            currentMediaFilter = type;
+            ['all', 'photo', 'video'].forEach(t => {
+                const btn = document.getElementById(`filter-${t}`);
+                if (t === type) {
+                    btn.className = 'px-2.5 py-1 rounded-lg bg-obsidian-700 text-white font-medium';
                 } else {
-                    throw new Error('Offline');
+                    btn.className = 'px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white';
                 }
-            } catch (e) {
-                pill.className = 'server-pill-offline rounded-2xl px-3.5 py-2 flex items-center gap-2.5 cursor-pointer';
-                ping.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-85';
-                dot.className = 'relative inline-flex rounded-full h-3 w-3 led-glow-red';
-                label.className = 'block text-[11px] font-extrabold uppercase text-red-400 leading-none';
-                label.innerText = 'SERVIDOR OFFLINE';
-                sub.innerText = 'Sem sinal recente';
-                document.getElementById('solar-modal-big-status').innerText = '● SERVIDOR OFFLINE';
-                document.getElementById('solar-modal-big-status').className = 'text-lg font-black uppercase text-red-400';
-                document.getElementById('solar-modal-server-desc').innerText = 'Sem sinal recente do PC local.';
+            });
+            renderPortfolio();
+        }
+
+        function renderPortfolio() {
+            const grid = document.getElementById('portfolio-grid');
+            const filtered = portfolioItems.filter(item => currentMediaFilter === 'all' || item.type === currentMediaFilter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-6 text-xs text-zinc-500 bg-obsidian-900 rounded-2xl border border-zinc-800">Nenhuma mídia nesta categoria.</div>`;
+                return;
             }
+
+            grid.innerHTML = filtered.map(item => {
+                const isSelected = selectedCutStyle && selectedCutStyle.id === item.id;
+                const isVideo = item.type === 'video';
+                return `
+                    <div onclick="openMediaModal('${item.id}')" class="group relative aspect-[4/5] rounded-2xl overflow-hidden bg-obsidian-900 border ${isSelected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-zinc-800'} cursor-pointer">
+                        <img src="${item.url}" alt="${item.title}"
+                            onerror="this.src='https://placehold.co/600x750/18181B/FBBF24?text=Secreta+Barber'"
+                            class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                        
+                        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${isVideo ? 'bg-emerald-500 text-black' : 'bg-black/75 text-zinc-200 border border-zinc-700'} flex items-center gap-1">
+                            <i data-lucide="${isVideo ? 'play' : 'image'}" class="w-3 h-3"></i>
+                            ${isVideo ? 'Vídeo' : 'Foto'}
+                        </span>
+
+                        ${isSelected ? `<span class="absolute top-2 right-2 w-6 h-6 rounded-full bg-amber-500 text-black flex items-center justify-center shadow"><i data-lucide="check" class="w-3.5 h-3.5"></i></span>` : ''}
+
+                        <div class="absolute bottom-2 left-2 right-2">
+                            <p class="text-xs font-bold text-white truncate">${item.title}</p>
+                            <p class="text-[10px] text-amber-400 mt-0.5">Toque para escolher</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            if (window.lucide) lucide.createIcons();
         }
 
-        function openSolarServerModal() { openSheetModal('solar-server-overlay', 'solar-server-sheet'); }
-        function closeSolarServerModal() { closeSheetModal('solar-server-overlay', 'solar-server-sheet'); }
+        function openMediaModal(id) {
+            const item = portfolioItems.find(m => m.id === id);
+            if (!item) return;
 
-        function parseCSV(str) {
-            const arr = []; let quote = false; let row = [], col = '';
-            for (let c = 0; c < str.length; c++) {
-                let cc = str[c], nc = str[c+1];
-                if (cc === '\r') continue;
-                if (cc === '"' && quote && nc === '"') { col += cc; ++c; continue; }
-                if (cc === '"') { quote = !quote; continue; }
-                if (cc === ',' && !quote) { row.push(col.trim()); col = ''; continue; }
-                if (cc === '\n' && !quote) { if (col.trim() || row.length) { row.push(col.trim()); arr.push(row); } row = []; col = ''; continue; }
-                col += cc;
+            const modal = document.getElementById('media-modal');
+            const title = document.getElementById('modal-media-title');
+            const content = document.getElementById('modal-media-content');
+            const selectBtn = document.getElementById('modal-select-cut-btn');
+
+            title.textContent = item.title;
+            const isVideoFile = item.type === 'video' && (item.url.endsWith('.mp4') || item.url.startsWith('data:video') || item.url.startsWith('blob:'));
+
+            if (isVideoFile) {
+                content.innerHTML = `<video src="${item.url}" controls autoplay playsinline class="w-full max-h-[50vh] object-contain"></video>`;
+            } else {
+                content.innerHTML = `<img src="${item.url}" alt="${item.title}" onerror="this.src='https://placehold.co/600x750/18181B/FBBF24?text=Secreta+Barber'" class="w-full max-h-[50vh] object-contain">`;
             }
-            if (col || row.length) { row.push(col.trim()); arr.push(row); }
-            return arr;
-        }
 
-        function safeParseFloat(val) {
-            if (!val) return 0;
-            if (typeof val === 'number') return val;
-            let str = val.toString().replace(/[R$\s]/g, '');
-            if (str.includes(',') && str.includes('.')) str = str.replace(/\./g, '').replace(',', '.');
-            else if (str.includes(',')) str = str.replace(',', '.');
-            let num = parseFloat(str); return isNaN(num) ? 0 : num;
-        }
-
-        function getMonthIndex(mesStr) {
-            if (!mesStr) return -1;
-            const lower = mesStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            return NATIVE_MONTHS.map(m => m.normalize("NFD").replace(/[\u0300-\u036f]/g, "")).findIndex(m => lower.includes(m));
-        }
-
-        function buildSolarDueInfo(dueDay, mesStr, isPaid, hasData) {
-            if (!dueDay) return { shortLabel: 'Vencimento: --', fullLabel: 'Não cadastrado', fullDateSlash: '--/--/----', whatsappDayLabel: 'A combinar', textClass: 'text-slate-400' };
-            const dayPadded = String(dueDay).padStart(2, '0');
-            const refMonthIdx = getMonthIndex(mesStr);
-            if (refMonthIdx === -1) return { shortLabel: `Vencimento: Dia ${dayPadded}`, fullLabel: `Todo dia ${dayPadded}`, fullDateSlash: `Dia ${dayPadded}`, whatsappDayLabel: `Dia ${dayPadded}`, textClass: 'text-slate-300' };
-
-            const now = new Date();
-            let targetYear = now.getFullYear();
-            let dueMonthIdx = dueDay <= 5 ? refMonthIdx + 1 : refMonthIdx;
-            if (dueMonthIdx > 11) { dueMonthIdx = 0; targetYear += 1; }
-            const monthPadded = String(dueMonthIdx + 1).padStart(2, '0');
-            const formattedDate = `${dayPadded}/${monthPadded}`;
-            const fullDateSlash = `${dayPadded}/${monthPadded}/${targetYear}`;
-
-            return {
-                shortLabel: `Vencimento: ${formattedDate}`,
-                fullLabel: `Vencimento: ${fullDateSlash}`,
-                fullDateSlash,
-                whatsappDayLabel: `Dia ${dayPadded}`,
-                textClass: isPaid ? 'text-emerald-400' : 'text-sky-300'
+            selectBtn.onclick = () => {
+                selectedCutStyle = item;
+                document.getElementById('selected-style-name').textContent = item.title;
+                document.getElementById('selected-style-badge').classList.remove('hidden');
+                renderPortfolio();
+                updateSummary();
+                closeMediaModal();
+                document.getElementById('booking-form').scrollIntoView({ behavior: 'smooth' });
             };
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
 
-        async function fetchGoogleSheetCSV(sheetName) {
-            const SHEET_ID = localStorage.getItem(KEYS.SOLAR_SHEET_ID);
-            if (!SHEET_ID) throw new Error('NO_SHEET_ID');
-            const urls = [
-                `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`,
-                `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(sheetName)}`
-            ];
-            for (const url of urls) {
-                try {
-                    const res = await fetch(url);
-                    if (res.ok) {
-                        const text = await res.text();
-                        if (!text.trim().startsWith('<!DOCTYPE')) return parseCSV(text);
-                    }
-                } catch (e) {}
-            }
-            throw new Error('Planilha inacessível');
+        function closeMediaModal() {
+            const modal = document.getElementById('media-modal');
+            document.getElementById('modal-media-content').innerHTML = '';
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
+
+        function clearSelectedStyle() {
+            selectedCutStyle = null;
+            document.getElementById('selected-style-badge').classList.add('hidden');
+            renderPortfolio();
+            updateSummary();
+        }
+
+        // ==========================================
+        // 6. SERVIÇOS, DIAS E HORÁRIOS
+        // ==========================================
+        function renderServices() {
+            const container = document.getElementById('services-list');
+            container.innerHTML = DEFAULT_SERVICES.map(srv => {
+                const active = selectedService && selectedService.id === srv.id;
+                return `
+                    <div onclick="selectService('${srv.id}')" class="p-3 rounded-xl border cursor-pointer transition flex items-center justify-between gap-2 ${active ? 'bg-amber-500/10 border-amber-500 text-white' : 'bg-obsidian-950 border-zinc-800 text-zinc-300 hover:border-zinc-700'}">
+                        <div class="min-w-0">
+                            <p class="text-xs sm:text-sm font-bold truncate ${active ? 'text-amber-400' : 'text-white'}">${srv.name}</p>
+                            <p class="text-[11px] text-zinc-400 mt-0.5 truncate">${srv.desc} • ${srv.duration}</p>
+                        </div>
+                        <span class="text-xs font-extrabold px-2.5 py-1 rounded-lg ${active ? 'bg-amber-500 text-black' : 'bg-obsidian-800 text-zinc-200'} shrink-0">
+                            ${srv.price}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectService(id) {
+            selectedService = DEFAULT_SERVICES.find(s => s.id === id);
+            renderServices();
+            updateSummary();
+        }
+
+        function generateNextDays() {
+            const strip = document.getElementById('dates-strip');
+            const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            let html = '';
+
+            for (let i = 0; i < 7; i++) {
+                const d = new Date();
+                d.setDate(d.getDate() + i);
+                const iso = d.toISOString().split('T')[0];
+                const labelDay = i === 0 ? 'Hoje' : (i === 1 ? 'Amanhã' : weekDays[d.getDay()]);
+                const dayNum = String(d.getDate()).padStart(2, '0');
+                const monthName = months[d.getMonth()];
+
+                if (i === 0 && !selectedDate) selectedDate = { iso, display: `${dayNum}/${monthName} (${labelDay})` };
+
+                const isSelected = selectedDate && selectedDate.iso === iso;
+                html += `
+                    <button type="button" onclick="selectDate('${iso}', '${dayNum}/${monthName} (${labelDay})')"
+                        class="min-w-[68px] py-2 px-2.5 rounded-xl border text-center transition shrink-0 ${isSelected ? 'bg-amber-500 border-amber-500 text-black font-bold' : 'bg-obsidian-950 border-zinc-800 text-zinc-300 hover:border-zinc-700'}">
+                        <span class="block text-[10px] uppercase ${isSelected ? 'text-black/80' : 'text-zinc-500'}">${labelDay}</span>
+                        <span class="block text-sm font-extrabold mt-0.5">${dayNum}</span>
+                        <span class="block text-[10px] ${isSelected ? 'text-black/80' : 'text-zinc-500'}">${monthName}</span>
+                    </button>
+                `;
+            }
+            strip.innerHTML = html;
+        }
+
+        function selectDate(iso, display) {
+            selectedDate = { iso, display };
+            selectedTime = null;
+            generateNextDays();
+            renderTimes();
+            updateSummary();
+        }
+
+        function renderTimes() {
+            const grid = document.getElementById('times-grid');
+            const bookedTimes = bookings
+                .filter(b => b.dateIso === selectedDate.iso)
+                .map(b => b.time);
+
+            grid.innerHTML = TIME_SLOTS.map(time => {
+                const isBooked = bookedTimes.includes(time);
+                const isSelected = selectedTime === time;
+
+                if (isBooked) {
+                    return `
+                        <button type="button" disabled class="py-2.5 rounded-xl bg-obsidian-950/50 border border-zinc-900 text-zinc-600 text-xs font-medium line-through cursor-not-allowed">
+                            ${time}
+                        </button>
+                    `;
+                }
+
+                return `
+                    <button type="button" onclick="selectTime('${time}')"
+                        class="py-2.5 rounded-xl border text-xs font-bold transition ${isSelected ? 'bg-amber-500 border-amber-500 text-black shadow-md shadow-amber-500/20' : 'bg-obsidian-950 border-zinc-800 text-zinc-200 hover:border-amber-500/50'}">
+                        ${time}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectTime(time) {
+            selectedTime = time;
+            renderTimes();
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const el = document.getElementById('booking-summary-text');
+            if (!selectedService || !selectedDate || !selectedTime) {
+                el.textContent = `${selectedService ? selectedService.name : 'Serviço'} • Escolha um horário acima`;
+                return;
+            }
+            const stylePart = selectedCutStyle ? ` • Corte: ${selectedCutStyle.title}` : '';
+            el.textContent = `${selectedService.name} (${selectedService.price}) • ${selectedDate.display} às ${selectedTime}${stylePart}`;
+        }
+
+        // ==========================================
+        // 7. ENVIO DO AGENDAMENTO + WHATSAPP
+        // ==========================================
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+
+            if (!selectedTime) {
+                showPushBanner('Escolha o Horário', 'Selecione um horário livre antes de confirmar.');
+                return;
+            }
+
+            const clientName = document.getElementById('client-name').value.trim();
+            const clientPhone = document.getElementById('client-phone').value.trim();
+            const clientNotes = document.getElementById('client-notes').value.trim();
+
+            const newBooking = {
+                id: 'bk_' + Date.now(),
+                clientName,
+                clientPhone,
+                serviceName: selectedService.name,
+                servicePrice: selectedService.price,
+                dateIso: selectedDate.iso,
+                dateDisplay: selectedDate.display,
+                time: selectedTime,
+                cutStyle: selectedCutStyle ? selectedCutStyle.title : 'Padrão / A combinar',
+                notes: clientNotes || 'Nenhuma',
+                createdAt: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            bookings.unshift(newBooking);
+            localStorage.setItem('sb_bookings', JSON.stringify(bookings));
+
+            triggerBarberAppNotification(newBooking);
+
+            const waText =
+                `*SECRETA BARBER - NOVO AGENDAMENTO*%0A` +
+                `----------------------------------%0A` +
+                `*Cliente:* ${encodeURIComponent(newBooking.clientName)}%0A` +
+                `*WhatsApp:* ${encodeURIComponent(newBooking.clientPhone)}%0A` +
+                `*Serviço:* ${encodeURIComponent(newBooking.serviceName)} (${encodeURIComponent(newBooking.servicePrice)})%0A` +
+                `*Data:* ${encodeURIComponent(newBooking.dateDisplay)}%0A` +
+                `*Horário:* ${encodeURIComponent(newBooking.time)}%0A` +
+                `*Corte Ref.:* ${encodeURIComponent(newBooking.cutStyle)}%0A` +
+                `*Obs:* ${encodeURIComponent(newBooking.notes)}`;
+
+            const cleanBarberNumber = barberWhatsApp.replace(/\D/g, '');
+            const waUrl = `https://wa.me/${cleanBarberNumber}?text=${waText}`;
+
+            document.getElementById('success-details-box').innerHTML = `
+                <p><strong class="text-white">Cliente:</strong> ${newBooking.clientName}</p>
+                <p><strong class="text-white">Serviço:</strong> ${newBooking.serviceName} (${newBooking.servicePrice})</p>
+                <p><strong class="text-white">Quando:</strong> ${newBooking.dateDisplay} às ${newBooking.time}</p>
+                <p><strong class="text-white">Corte Ref.:</strong> ${newBooking.cutStyle}</p>
+            `;
+            document.getElementById('whatsapp-direct-link').href = waUrl;
+
+            const successModal = document.getElementById('success-modal');
+            successModal.classList.remove('hidden');
+            successModal.classList.add('flex');
+
+            selectedTime = null;
+            renderTimes();
+            updateSummary();
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('success-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // ==========================================
+        // 8. NOTIFICAÇÕES INTERNAS DO BARBEIRO
+        // ==========================================
+        function triggerBarberAppNotification(booking) {
+            unreadNotifications++;
+            updateUnreadBadge();
+            playNotificationChime();
+
+            if ('vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200]);
+            }
+
+            const title = `${booking.clientName} • ${booking.time}`;
+            const desc = `${booking.serviceName} (${booking.dateDisplay}) - Corte: ${booking.cutStyle}`;
+            showPushBanner(title, desc);
+        }
+
+        function showPushBanner(title, desc) {
+            const banner = document.getElementById('app-push-banner');
+            document.getElementById('push-banner-title').textContent = title;
+            document.getElementById('push-banner-desc').textContent = desc;
+
+            banner.classList.remove('-translate-y-40', 'opacity-0');
+            banner.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                hidePushBanner();
+            }, 5500);
+        }
+
+        function hidePushBanner() {
+            const banner = document.getElementById('app-push-banner');
+            banner.classList.add('-translate-y-40', 'opacity-0');
+            banner.classList.remove('translate-y-0', 'opacity-100');
+        }
+
+        function simulateIncomingBooking() {
+            const demoBooking = {
+                id: 'bk_' + Date.now(),
+                clientName: 'Lucas Mendes (Teste)',
+                clientPhone: '(62) 99888-7766',
+                serviceName: 'Corte + Barba Completa',
+                servicePrice: 'R$ 55,00',
+                dateIso: selectedDate.iso,
+                dateDisplay: selectedDate.display,
+                time: '16:30',
+                cutStyle: 'Mid Fade Navalhado',
+                notes: 'Teste de alerta no sistema',
+                createdAt: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+            };
+            bookings.unshift(demoBooking);
+            localStorage.setItem('sb_bookings', JSON.stringify(bookings));
+            triggerBarberAppNotification(demoBooking);
+            renderBarberBookings();
+            renderTimes();
+        }
+
+        // ==========================================
+        // 9. PAINEL DO BARBEIRO (AGENDA E MÍDIA)
+        // ==========================================
+        function saveBarberWhatsApp() {
+            const val = document.getElementById('barber-whatsapp-input').value.trim();
+            if (!val) return;
+            barberWhatsApp = val;
+            localStorage.setItem('sb_whatsapp', barberWhatsApp);
+            showPushBanner('Número Salvo!', `Agendamentos irão para ${barberWhatsApp}`);
+        }
+
+        function renderBarberBookings() {
+            const container = document.getElementById('barber-bookings-list');
+            document.getElementById('bookings-count').textContent = bookings.length;
+
+            if (bookings.length === 0) {
+                container.innerHTML = `<p class="text-xs text-zinc-500 text-center py-5">Nenhum horário marcado ainda.</p>`;
+                return;
+            }
+
+            container.innerHTML = bookings.map(b => `
+                <div class="bg-obsidian-950 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-2.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded bg-amber-500 text-black text-xs font-extrabold">${b.time}</span>
+                            <span class="text-xs font-semibold text-zinc-300">${b.dateDisplay}</span>
+                        </div>
+                        <span class="text-[11px] text-zinc-500">Às ${b.createdAt}</span>
+                    </div>
+                    <div class="space-y-0.5">
+                        <p class="text-sm font-bold text-white break-words">${b.clientName} <span class="text-xs font-normal text-zinc-400">(${b.clientPhone})</span></p>
+                        <p class="text-xs text-zinc-300">${b.serviceName} • <span class="text-amber-400">Corte: ${b.cutStyle}</span></p>
+                        ${b.notes !== 'Nenhuma' ? `<p class="text-[11px] text-zinc-400 italic break-words">"${b.notes}"</p>` : ''}
+                    </div>
+                    <div class="flex items-center justify-end gap-2 pt-1 border-t border-zinc-900">
+                        <a href="https://wa.me/${b.clientPhone.replace(/\D/g, '')}" target="_blank" rel="noopener noreferrer"
+                            class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+                            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                        <button type="button" onclick="removeBooking('${b.id}')" class="p-1.5 rounded-lg bg-obsidian-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 transition" title="Remover">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function removeBooking(id) {
+            bookings = bookings.filter(b => b.id !== id);
+            localStorage.setItem('sb_bookings', JSON.stringify(bookings));
+            renderBarberBookings();
+            renderTimes();
+        }
+
+        function clearAllBookings() {
+            bookings = [];
+            localStorage.setItem('sb_bookings', JSON.stringify(bookings));
+            renderBarberBookings();
+            renderTimes();
+        }
+
+        function previewLocalFileName(input) {
+            const label = document.getElementById('selected-file-label');
+            if (input.files && input.files[0]) {
+                label.textContent = `Arquivo: ${input.files[0].name}`;
+                label.classList.remove('hidden');
+            }
+        }
+
+        function handleAddMedia(e) {
+            e.preventDefault();
+            const title = document.getElementById('media-title').value.trim();
+            const type = document.getElementById('media-type').value;
+            const urlInput = document.getElementById('media-url').value.trim();
+            const fileInput = document.getElementById('media-file');
+
+            if (fileInput.files && fileInput.files[0]) {
+                const fileUrl = URL.createObjectURL(fileInput.files[0]);
+                saveNewMediaItem(title, type, fileUrl);
+            } else if (urlInput) {
+                saveNewMediaItem(title, type, urlInput);
+            } else {
+                showPushBanner('Faltou a Mídia', 'Cole um link ou selecione uma foto/vídeo do celular.');
+                return;
+            }
+
+            e.target.reset();
+            document.getElementById('selected-file-label').classList.add('hidden');
+        }
+
+        function saveNewMediaItem(title, type, url) {
+            const newItem = {
+                id: 'm_' + Date.now(),
+                title,
+                type,
+                url
+            };
+            portfolioItems.unshift(newItem);
+            try {
+                localStorage.setItem('sb_portfolio', JSON.stringify(portfolioItems));
+            } catch (err) {
+                // Mantém na sessão se exceder limite do navegador
+            }
+            renderPortfolio();
+            renderBarberMediaManager();
+            showPushBanner('Publicado!', `"${title}" adicionado ao catálogo.`);
+        }
+
+        function renderBarberMediaManager() {
+            const container = document.getElementById('barber-media-manager');
+            container.innerHTML = portfolioItems.map(item => `
+                <div class="flex items-center justify-between gap-2 bg-obsidian-950 border border-zinc-800 p-2.5 rounded-xl">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <img src="${item.url}" onerror="this.src='https://placehold.co/100x100/18181B/FBBF24?text=SB'" class="w-10 h-10 rounded-lg object-cover shrink-0">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-white truncate">${item.title}</p>
+                            <span class="text-[10px] uppercase text-amber-400">${item.type === 'video' ? 'Vídeo' : 'Foto'}</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="deleteMediaItem('${item.id}')" class="p-1.5 text-zinc-400 hover:text-red-400 transition shrink-0">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function deleteMediaItem(id) {
+            portfolioItems = portfolioItems.filter(m => m.id !== id);
+            localStorage.setItem('sb_portfolio', JSON.stringify(portfolioItems));
+            renderPortfolio();
+            renderBarberMediaManager();
+        }
+    </script>
+</body>
+</html>
