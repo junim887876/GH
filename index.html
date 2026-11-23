@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secreta Barber | Agendamento Online</title>
 
+    <!-- ===================================================================== -->
+    <!-- CONFIGURAÇÃO DA PLANILHA GOOGLE (COLE SUA URL DO APPS SCRIPT ABAIXO)  -->
+    <!-- ===================================================================== -->
+    <script>
+        const GOOGLE_SCRIPT_URL = "COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT_TERMINADA_EM_EXEC";
+        // Exemplo: const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx.../exec";
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Fonte Inter -->
@@ -85,7 +93,7 @@
                     <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400 truncate">Secreta Barber • Alerta</span>
                     <span class="text-[10px] text-zinc-400 shrink-0">Agora</span>
                 </div>
-                <p id="push-banner-title" class="text-xs sm:text-sm font-semibold text-white truncate mt-0.5">Novo horário marcado</p>
+                <p id="push-banner-title" class="text-xs sm:text-sm font-semibold text-white truncate mt-0.5">Aviso</p>
                 <p id="push-banner-desc" class="text-xs text-zinc-300 mt-0.5 break-words">Detalhes...</p>
             </div>
             <button type="button" onclick="hidePushBanner()" class="text-zinc-400 hover:text-white p-1 shrink-0">
@@ -106,9 +114,9 @@
                     <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white leading-tight truncate">
                         SECRETA <span class="text-amber-400">BARBER</span>
                     </h1>
-                    <p class="text-[11px] text-zinc-400 flex items-center gap-1 truncate">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shrink-0"></span>
-                        <span class="truncate">Agendamento Exclusivo</span>
+                    <p class="text-[11px] text-zinc-400 flex items-center gap-1.5 truncate">
+                        <span id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block shrink-0 animate-pulse"></span>
+                        <span id="sync-status-text" class="truncate">Conectando à agenda...</span>
                     </p>
                 </div>
             </div>
@@ -119,13 +127,24 @@
                     Agendar
                 </button>
                 <button type="button" id="btn-mode-barber" onclick="switchView('barber')" class="relative px-3 py-2 rounded-xl text-xs font-semibold bg-obsidian-800 text-zinc-300 hover:text-white border border-zinc-700/70 transition flex items-center gap-1.5">
-                    <i data-lucide="bell" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <i data-lucide="sliders" class="w-3.5 h-3.5 text-amber-400"></i>
                     <span>Barbeiro</span>
                     <span id="unread-badge" class="hidden absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow">0</span>
                 </button>
             </div>
         </div>
     </header>
+
+    <!-- ALERTA CASO A URL DO APPS SCRIPT NÃO TENHA SIDO COLADA -->
+    <div id="missing-url-warning" class="hidden w-full max-w-2xl mx-auto px-3 sm:px-4 pt-4">
+        <div class="bg-red-500/10 border border-red-500/40 rounded-2xl p-3.5 text-xs text-red-200 flex items-start gap-2.5">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400 shrink-0 mt-0.5"></i>
+            <div>
+                <p class="font-bold text-red-300">Planilha Google ainda não conectada!</p>
+                <p class="mt-0.5 text-red-200/80">Abra o arquivo <code>index.html</code> e cole a URL do seu Google Apps Script na variável <code>GOOGLE_SCRIPT_URL</code> logo no topo do código.</p>
+            </div>
+        </div>
+    </div>
 
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="flex-1 w-full max-w-2xl mx-auto px-3 sm:px-4 py-5">
@@ -167,13 +186,13 @@
                     </div>
                 </div>
 
-                <!-- Grid de Mídia (2 colunas no celular, 3 no PC) -->
+                <!-- Grid de Mídia -->
                 <div id="portfolio-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full">
                     <!-- Renderizado via JS -->
                 </div>
             </div>
 
-            <!-- FORMULÁRIO DE AGENDAMENTO (SEM ESCOLHA DE PROFISSIONAL) -->
+            <!-- FORMULÁRIO DE AGENDAMENTO -->
             <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-5 shadow-xl w-full">
                 <div class="border-b border-zinc-800 pb-3.5 flex flex-wrap items-center justify-between gap-2">
                     <div>
@@ -213,30 +232,41 @@
                         <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
                             3. Horários Disponíveis
                         </label>
-                        <span class="text-[11px] text-zinc-500 flex items-center gap-2 shrink-0">
-                            <span class="inline-block w-2 h-2 rounded-full bg-obsidian-700 border border-zinc-600"></span> Livre
-                            <span class="inline-block w-2 h-2 rounded-full bg-zinc-900 opacity-50"></span> Ocupado
-                        </span>
+                        <div class="flex items-center gap-3">
+                            <button type="button" onclick="syncWithGoogleSheets(true)" class="text-[11px] text-amber-400 hover:underline flex items-center gap-1">
+                                <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                                <span>Atualizar</span>
+                            </button>
+                            <span class="text-[11px] text-zinc-500 flex items-center gap-2 shrink-0">
+                                <span class="inline-block w-2 h-2 rounded-full bg-obsidian-700 border border-zinc-600"></span> Livre
+                                <span class="inline-block w-2 h-2 rounded-full bg-zinc-900 opacity-50"></span> Ocupado
+                            </span>
+                        </div>
                     </div>
                     <div id="times-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
                         <!-- Horários renderizados via JS -->
                     </div>
                 </div>
 
-                <!-- PASSO 4: DADOS DO CLIENTE -->
+                <!-- PASSO 4: DADOS DO CLIENTE (SALVOS APENAS NO LOCALSTORAGE DO CELULAR DO CLIENTE) -->
                 <div class="space-y-3 pt-3 border-t border-zinc-800/80">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
-                        4. Seus Dados
-                    </label>
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
+                            4. Seus Dados (Salvos só no seu celular)
+                        </label>
+                        <button type="button" id="clear-client-storage-btn" onclick="clearClientLocalStorage()" class="hidden text-[11px] text-zinc-400 hover:text-red-400 underline transition">
+                            Esquecer meus dados
+                        </button>
+                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs text-zinc-300 mb-1">Seu Nome / Apelido *</label>
-                            <input type="text" id="client-name" required placeholder="Ex: João Silva"
+                            <input type="text" id="client-name" required placeholder="Ex: João Silva" oninput="saveClientProfileLocally()"
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
                         </div>
                         <div>
                             <label class="block text-xs text-zinc-300 mb-1">Seu WhatsApp (com DDD) *</label>
-                            <input type="tel" id="client-phone" required placeholder="Ex: (62) 99999-9999"
+                            <input type="tel" id="client-phone" required placeholder="Ex: (62) 99999-9999" oninput="maskPhoneInput(this); saveClientProfileLocally()"
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition">
                         </div>
                     </div>
@@ -253,16 +283,16 @@
                         <p class="text-[11px] text-zinc-400">Resumo do Agendamento:</p>
                         <p id="booking-summary-text" class="text-xs sm:text-sm font-semibold text-white mt-0.5 break-words">Selecione serviço, dia e horário</p>
                     </div>
-                    <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition cursor-pointer">
+                    <button type="submit" id="submit-booking-btn" class="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition cursor-pointer">
                         <i data-lucide="message-circle" class="w-5 h-5 shrink-0"></i>
-                        <span>Confirmar & Enviar WhatsApp</span>
+                        <span id="submit-booking-text">Confirmar & Enviar WhatsApp</span>
                     </button>
                 </div>
             </form>
         </section>
 
         <!-- ========================================================= -->
-        <!-- VISÃO 2: APP DO BARBEIRO (NOTIFICAÇÕES + GESTÃO DE MÍDIA) -->
+        <!-- VISÃO 2: APP DO BARBEIRO (HORÁRIOS, AGENDA E MÍDIA)        -->
         <!-- ========================================================= -->
         <section id="view-barber" class="hidden space-y-5 w-full">
 
@@ -271,20 +301,54 @@
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div>
                         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400">PAINEL DO BARBEIRO</span>
-                        <h2 class="text-lg font-bold text-white mt-1">Notificações & Agenda</h2>
+                        <h2 class="text-lg font-bold text-white mt-1">Horários & Agenda (Planilha Google)</h2>
                     </div>
-                    <button type="button" onclick="simulateIncomingBooking()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold flex items-center gap-1.5 transition shrink-0">
-                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-                        <span>Testar Alerta</span>
+                    <button type="button" onclick="syncWithGoogleSheets(true)" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold flex items-center gap-1.5 transition shrink-0">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        <span>Sincronizar Planilha</span>
                     </button>
                 </div>
-                <p class="text-xs text-zinc-400">Sempre que um cliente marcar horário, você recebe um alerta sonoro e visual aqui e o pedido chega no seu WhatsApp.</p>
+                <p class="text-xs text-zinc-400">Tudo que você adicionar ou remover aqui atualiza na hora a sua Planilha Google e o celular de todos os clientes.</p>
+            </div>
+
+            <!-- NOVO BLOCO: GERENCIAR HORÁRIOS DE ATENDIMENTO NA PLANILHA -->
+            <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-4">
+                <div class="border-b border-zinc-800 pb-3">
+                    <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="clock" class="w-4 h-4 text-amber-400 shrink-0"></i>
+                        <span>Adicionar ou Editar Horários de Atendimento</span>
+                    </h3>
+                    <p class="text-xs text-zinc-400 mt-0.5">Configure os horários que aparecem disponíveis para os clientes marcarem.</p>
+                </div>
+
+                <!-- Formulário para Adicionar ou Editar Horário -->
+                <form onsubmit="handleSaveTimeSlot(event)" class="flex flex-col sm:flex-row gap-2.5">
+                    <input type="hidden" id="editing-old-time" value="">
+                    <div class="flex-1">
+                        <input type="time" id="new-time-slot-input" required
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                    <button type="submit" id="save-time-btn" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0">
+                        Adicionar Horário
+                    </button>
+                    <button type="button" id="cancel-edit-time-btn" onclick="cancelEditTimeSlot()" class="hidden w-full sm:w-auto px-4 py-2.5 rounded-xl bg-obsidian-800 text-zinc-300 hover:text-white text-xs font-semibold transition shrink-0">
+                        Cancelar
+                    </button>
+                </form>
+
+                <!-- Grade de Horários Cadastrados na Planilha -->
+                <div>
+                    <p class="text-xs font-semibold text-zinc-400 mb-2">Horários ativos na sua grade (clique no lápis para editar):</p>
+                    <div id="barber-timeslots-manager" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <!-- Renderizado via JS -->
+                    </div>
+                </div>
             </div>
 
             <!-- Configuração do WhatsApp do Barbeiro -->
             <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="settings" class="w-4 h-4 text-amber-400 shrink-0"></i>
+                    <i data-lucide="phone" class="w-4 h-4 text-emerald-400 shrink-0"></i>
                     <span>WhatsApp que Recebe os Pedidos</span>
                 </h3>
                 <div class="flex flex-col sm:flex-row gap-2.5">
@@ -296,14 +360,14 @@
                 </div>
             </div>
 
-            <!-- AGENDA & NOTIFICAÇÕES RECEBIDAS -->
+            <!-- AGENDA & NOTIFICAÇÕES RECEBIDAS DA PLANILHA -->
             <div class="bg-obsidian-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3.5">
                 <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
                     <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                         <i data-lucide="calendar-check" class="w-4 h-4 text-emerald-400"></i>
                         <span>Horários Marcados (<span id="bookings-count">0</span>)</span>
                     </h3>
-                    <button type="button" onclick="clearAllBookings()" class="text-xs text-zinc-400 hover:text-red-400 transition">Limpar</button>
+                    <button type="button" onclick="clearAllBookings()" class="text-xs text-zinc-400 hover:text-red-400 transition">Limpar Tudo</button>
                 </div>
                 <div id="barber-bookings-list" class="space-y-3">
                     <!-- Lista de agendamentos renderizada via JS -->
@@ -336,13 +400,13 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs text-zinc-400 mb-1">Link da Foto/Vídeo ou Galeria do Celular</label>
+                        <label class="block text-xs text-zinc-400 mb-1">Link da Foto/Vídeo (Recomendado para GitHub Pages)</label>
                         <div class="flex flex-col sm:flex-row gap-2">
-                            <input type="url" id="media-url" placeholder="https://... (opcional se escolher arquivo)"
+                            <input type="url" id="media-url" placeholder="https://..."
                                 class="w-full sm:flex-1 px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-zinc-800 text-sm text-white focus:outline-none focus:border-amber-500">
                             <label class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 border border-zinc-700 text-xs font-semibold text-zinc-200 flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
                                 <i data-lucide="upload" class="w-4 h-4 text-amber-400"></i>
-                                <span>Escolher Arquivo</span>
+                                <span>Arquivo Local</span>
                                 <input type="file" id="media-file" accept="image/*,video/*" class="hidden" onchange="previewLocalFileName(this)">
                             </label>
                         </div>
@@ -393,7 +457,7 @@
             </div>
             <h3 class="text-lg font-bold text-white">Horário Reservado!</h3>
             <p class="text-xs text-zinc-300 leading-relaxed">
-                O alerta já foi enviado para o aplicativo do barbeiro. Agora clique abaixo para enviar a confirmação no <strong>WhatsApp</strong> dele.
+                Seu horário já foi gravado na agenda do barbeiro. Clique abaixo para enviar a confirmação no <strong>WhatsApp</strong> dele.
             </p>
             <div id="success-details-box" class="bg-obsidian-950 border border-zinc-800 rounded-xl p-3 text-left text-xs text-zinc-300 space-y-1 break-words">
                 <!-- Detalhes preenchidos via JS -->
@@ -416,7 +480,7 @@
         <p>Secreta Barber © 2026 • Agendamento Online</p>
     </footer>
 
-    <!-- LÓGICA COMPLETA E VERIFICADA -->
+    <!-- LÓGICA COMPLETA E INTEGRADA COM GOOGLE SHEETS -->
     <script>
         // ==========================================
         // 1. DADOS INICIAIS E ESTADO DA APLICAÇÃO
@@ -428,7 +492,7 @@
             { id: 'srv_4', name: 'Pezinho & Sobrancelha', price: 'R$ 20,00', duration: '20 min', desc: 'Acabamento preciso' }
         ];
 
-        const TIME_SLOTS = [
+        const FALLBACK_TIME_SLOTS = [
             '09:00', '09:45', '10:30', '11:15',
             '13:30', '14:15', '15:00', '15:45',
             '16:30', '17:15', '18:00', '18:45'
@@ -455,16 +519,15 @@
             }
         ];
 
-        // Carregamento seguro do localStorage
-        let barberWhatsApp = localStorage.getItem('sb_whatsapp') || '5562999999999';
+        // Estado em memória sincronizado com a Planilha Google
         let bookings = [];
-        let portfolioItems = [];
+        let timeSlots = [...FALLBACK_TIME_SLOTS];
+        let knownBookingIds = new Set();
+        let isFirstSync = true;
 
-        try {
-            bookings = JSON.parse(localStorage.getItem('sb_bookings')) || [];
-        } catch (e) {
-            bookings = [];
-        }
+        // Configurações locais do aparelho
+        let barberWhatsApp = localStorage.getItem('sb_whatsapp') || '5562999999999';
+        let portfolioItems = [];
 
         try {
             const savedMedia = JSON.parse(localStorage.getItem('sb_portfolio'));
@@ -480,23 +543,180 @@
         let currentMediaFilter = 'all';
         let unreadNotifications = 0;
 
+        function isScriptConfigured() {
+            return typeof GOOGLE_SCRIPT_URL === 'string' &&
+                   GOOGLE_SCRIPT_URL.startsWith('https://script.google.com/');
+        }
+
         // ==========================================
         // 2. INICIALIZAÇÃO AO CARREGAR A PÁGINA
         // ==========================================
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('barber-whatsapp-input').value = barberWhatsApp;
+
+            // Carregar Nome e WhatsApp salvos APENAS no localStorage do celular do cliente
+            loadClientProfileLocally();
+
             generateNextDays();
             renderServices();
             renderTimes();
+            renderBarberTimeSlotsManager();
             renderPortfolio();
-            renderBarberBookings();
-            renderBarberMediaManager();
             updateSummary();
+
+            if (!isScriptConfigured()) {
+                document.getElementById('missing-url-warning').classList.remove('hidden');
+                setSyncStatus('error', 'URL do Apps Script pendente');
+            } else {
+                await syncWithGoogleSheets(false);
+                // Verifica novos agendamentos e atualizações de horários a cada 20 segundos
+                setInterval(() => syncWithGoogleSheets(false), 20000);
+            }
+
             if (window.lucide) lucide.createIcons();
         });
 
         // ==========================================
-        // 3. SOM DE NOTIFICAÇÃO VIA TONE.JS
+        // 3. LOCALSTORAGE EXCLUSIVO DO CLIENTE (NOME E CELULAR)
+        // ==========================================
+        function loadClientProfileLocally() {
+            try {
+                const raw = localStorage.getItem('sb_client_profile');
+                if (!raw) return;
+                const profile = JSON.parse(raw);
+                if (profile.name) document.getElementById('client-name').value = profile.name;
+                if (profile.phone) document.getElementById('client-phone').value = profile.phone;
+                if (profile.name || profile.phone) {
+                    document.getElementById('clear-client-storage-btn').classList.remove('hidden');
+                }
+            } catch (e) {
+                // Ignora erro de leitura
+            }
+        }
+
+        function saveClientProfileLocally() {
+            const name = document.getElementById('client-name').value.trim();
+            const phone = document.getElementById('client-phone').value.trim();
+            try {
+                localStorage.setItem('sb_client_profile', JSON.stringify({ name, phone }));
+                const clearBtn = document.getElementById('clear-client-storage-btn');
+                if (name || phone) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            } catch (e) {
+                // Ignora se modo privado bloquear storage
+            }
+        }
+
+        function clearClientLocalStorage() {
+            localStorage.removeItem('sb_client_profile');
+            document.getElementById('client-name').value = '';
+            document.getElementById('client-phone').value = '';
+            document.getElementById('clear-client-storage-btn').classList.add('hidden');
+            showPushBanner('Dados Removidos', 'Seu nome e número foram apagados deste celular.');
+        }
+
+        function maskPhoneInput(input) {
+            let v = input.value.replace(/\D/g, '').slice(0, 11);
+            if (v.length > 6) {
+                input.value = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+            } else if (v.length > 2) {
+                input.value = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+            } else if (v.length > 0) {
+                input.value = `(${v}`;
+            }
+        }
+
+        // ==========================================
+        // 4. SINCRONIZAÇÃO COM A PLANILHA GOOGLE
+        // ==========================================
+        function setSyncStatus(state, text) {
+            const dot = document.getElementById('sync-dot');
+            const label = document.getElementById('sync-status-text');
+            label.textContent = text;
+
+            if (state === 'ok') {
+                dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shrink-0';
+            } else if (state === 'loading') {
+                dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 inline-block shrink-0 animate-ping';
+            } else {
+                dot.className = 'w-1.5 h-1.5 rounded-full bg-red-500 inline-block shrink-0';
+            }
+        }
+
+        async function syncWithGoogleSheets(manualNotify = false) {
+            if (!isScriptConfigured()) return;
+
+            setSyncStatus('loading', 'Sincronizando agenda...');
+            try {
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`);
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    // Detectar novos agendamentos para disparar alerta sonoro/visual ao barbeiro
+                    if (!isFirstSync && Array.isArray(data.bookings)) {
+                        data.bookings.forEach(b => {
+                            if (!knownBookingIds.has(b.id)) {
+                                triggerBarberAppNotification(b);
+                            }
+                        });
+                    }
+
+                    bookings = Array.isArray(data.bookings) ? data.bookings : [];
+                    knownBookingIds = new Set(bookings.map(b => b.id));
+                    isFirstSync = false;
+
+                    if (Array.isArray(data.timeSlots) && data.timeSlots.length > 0) {
+                        timeSlots = data.timeSlots;
+                    }
+
+                    // Se o horário selecionado pelo cliente acabou de ser ocupado por outra pessoa, desmarca
+                    if (selectedTime && bookings.some(b => b.dateIso === selectedDate.iso && b.time === selectedTime)) {
+                        selectedTime = null;
+                        updateSummary();
+                    }
+
+                    renderTimes();
+                    renderBarberTimeSlotsManager();
+                    renderBarberBookings();
+                    setSyncStatus('ok', 'Agenda Online Sincronizada');
+
+                    if (manualNotify) {
+                        showPushBanner('Agenda Atualizada', 'Horários sincronizados com a Planilha Google.');
+                    }
+                } else {
+                    setSyncStatus('error', 'Erro ao ler planilha');
+                }
+            } catch (err) {
+                setSyncStatus('error', 'Sem conexão com a planilha');
+            }
+        }
+
+        async function postToGoogleSheets(payload) {
+            if (!isScriptConfigured()) {
+                showPushBanner('Erro de Configuração', 'Cole a URL do Apps Script no topo do HTML primeiro.');
+                return { status: 'error' };
+            }
+
+            setSyncStatus('loading', 'Salvando na planilha...');
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                return result;
+            } catch (err) {
+                setSyncStatus('error', 'Falha ao salvar');
+                return { status: 'error', message: err.toString() };
+            }
+        }
+
+        // ==========================================
+        // 5. SOM DE NOTIFICAÇÃO VIA TONE.JS
         // ==========================================
         async function playNotificationChime() {
             try {
@@ -515,7 +735,7 @@
         }
 
         // ==========================================
-        // 4. NAVEGAÇÃO ENTRE CLIENTE E BARBEIRO
+        // 6. NAVEGAÇÃO ENTRE CLIENTE E BARBEIRO
         // ==========================================
         function switchView(mode) {
             const clientView = document.getElementById('view-client');
@@ -533,10 +753,11 @@
                 barberView.classList.remove('hidden');
                 btnBarber.className = 'relative px-3 py-2 rounded-xl text-xs font-bold bg-amber-500 text-black transition flex items-center gap-1.5';
                 btnClient.className = 'px-3 py-2 rounded-xl text-xs font-semibold bg-obsidian-800 text-zinc-300 hover:text-white border border-zinc-700/70 transition';
-                
+
                 unreadNotifications = 0;
                 updateUnreadBadge();
                 renderBarberBookings();
+                renderBarberTimeSlotsManager();
             }
             if (window.lucide) lucide.createIcons();
         }
@@ -552,17 +773,15 @@
         }
 
         // ==========================================
-        // 5. CATÁLOGO DE FOTOS E VÍDEOS DE CORTES
+        // 7. CATÁLOGO DE FOTOS E VÍDEOS DE CORTES
         // ==========================================
         function filterPortfolio(type) {
             currentMediaFilter = type;
             ['all', 'photo', 'video'].forEach(t => {
                 const btn = document.getElementById(`filter-${t}`);
-                if (t === type) {
-                    btn.className = 'px-2.5 py-1 rounded-lg bg-obsidian-700 text-white font-medium';
-                } else {
-                    btn.className = 'px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white';
-                }
+                btn.className = (t === type)
+                    ? 'px-2.5 py-1 rounded-lg bg-obsidian-700 text-white font-medium'
+                    : 'px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white';
             });
             renderPortfolio();
         }
@@ -650,8 +869,15 @@
         }
 
         // ==========================================
-        // 6. SERVIÇOS, DIAS E HORÁRIOS
+        // 8. SERVIÇOS, DIAS (FUSO LOCAL CORRIGIDO) E HORÁRIOS
         // ==========================================
+        function getLocalDateIso(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         function renderServices() {
             const container = document.getElementById('services-list');
             container.innerHTML = DEFAULT_SERVICES.map(srv => {
@@ -685,12 +911,14 @@
             for (let i = 0; i < 7; i++) {
                 const d = new Date();
                 d.setDate(d.getDate() + i);
-                const iso = d.toISOString().split('T')[0];
+                const iso = getLocalDateIso(d);
                 const labelDay = i === 0 ? 'Hoje' : (i === 1 ? 'Amanhã' : weekDays[d.getDay()]);
                 const dayNum = String(d.getDate()).padStart(2, '0');
                 const monthName = months[d.getMonth()];
 
-                if (i === 0 && !selectedDate) selectedDate = { iso, display: `${dayNum}/${monthName} (${labelDay})` };
+                if (i === 0 && !selectedDate) {
+                    selectedDate = { iso, display: `${dayNum}/${monthName} (${labelDay})` };
+                }
 
                 const isSelected = selectedDate && selectedDate.iso === iso;
                 html += `
@@ -713,14 +941,29 @@
             updateSummary();
         }
 
+        function isPastTimeToday(timeStr) {
+            const now = new Date();
+            const todayIso = getLocalDateIso(now);
+            if (!selectedDate || selectedDate.iso !== todayIso) return false;
+
+            const [h, m] = timeStr.split(':').map(Number);
+            const slotDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+            return slotDate <= now;
+        }
+
         function renderTimes() {
             const grid = document.getElementById('times-grid');
+            if (!timeSlots || timeSlots.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-xs text-zinc-500 text-center py-4">Nenhum horário cadastrado pelo barbeiro.</p>`;
+                return;
+            }
+
             const bookedTimes = bookings
                 .filter(b => b.dateIso === selectedDate.iso)
                 .map(b => b.time);
 
-            grid.innerHTML = TIME_SLOTS.map(time => {
-                const isBooked = bookedTimes.includes(time);
+            grid.innerHTML = timeSlots.map(time => {
+                const isBooked = bookedTimes.includes(time) || isPastTimeToday(time);
                 const isSelected = selectedTime === time;
 
                 if (isBooked) {
@@ -757,9 +1000,9 @@
         }
 
         // ==========================================
-        // 7. ENVIO DO AGENDAMENTO + WHATSAPP
+        // 9. ENVIO DO AGENDAMENTO PARA A PLANILHA + WHATSAPP
         // ==========================================
-        function handleBookingSubmit(e) {
+        async function handleBookingSubmit(e) {
             e.preventDefault();
 
             if (!selectedTime) {
@@ -770,6 +1013,14 @@
             const clientName = document.getElementById('client-name').value.trim();
             const clientPhone = document.getElementById('client-phone').value.trim();
             const clientNotes = document.getElementById('client-notes').value.trim();
+
+            // Garante salvamento no localStorage do celular do cliente
+            saveClientProfileLocally();
+
+            const submitBtn = document.getElementById('submit-booking-btn');
+            const submitText = document.getElementById('submit-booking-text');
+            submitBtn.disabled = true;
+            submitText.textContent = 'Reservando na agenda...';
 
             const newBooking = {
                 id: 'bk_' + Date.now(),
@@ -785,10 +1036,31 @@
                 createdAt: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
             };
 
-            bookings.unshift(newBooking);
-            localStorage.setItem('sb_bookings', JSON.stringify(bookings));
+            const res = await postToGoogleSheets({
+                action: 'addBooking',
+                booking: newBooking
+            });
 
-            triggerBarberAppNotification(newBooking);
+            submitBtn.disabled = false;
+            submitText.textContent = 'Confirmar & Enviar WhatsApp';
+
+            if (res.status === 'conflict') {
+                showPushBanner('Horário Indisponível', res.message || 'Outro cliente acabou de reservar esse horário.');
+                selectedTime = null;
+                await syncWithGoogleSheets(false);
+                updateSummary();
+                return;
+            }
+
+            if (res.status !== 'ok') {
+                showPushBanner('Erro ao Agendar', 'Verifique sua internet ou a configuração da planilha.');
+                return;
+            }
+
+            // Atualiza estado local e sincroniza
+            knownBookingIds.add(newBooking.id);
+            bookings.unshift(newBooking);
+            setSyncStatus('ok', 'Agenda Online Sincronizada');
 
             const waText =
                 `*SECRETA BARBER - NOVO AGENDAMENTO*%0A` +
@@ -818,6 +1090,7 @@
 
             selectedTime = null;
             renderTimes();
+            renderBarberBookings();
             updateSummary();
         }
 
@@ -828,7 +1101,7 @@
         }
 
         // ==========================================
-        // 8. NOTIFICAÇÕES INTERNAS DO BARBEIRO
+        // 10. NOTIFICAÇÕES INTERNAS DO BARBEIRO
         // ==========================================
         function triggerBarberAppNotification(booking) {
             unreadNotifications++;
@@ -863,29 +1136,88 @@
             banner.classList.remove('translate-y-0', 'opacity-100');
         }
 
-        function simulateIncomingBooking() {
-            const demoBooking = {
-                id: 'bk_' + Date.now(),
-                clientName: 'Lucas Mendes (Teste)',
-                clientPhone: '(62) 99888-7766',
-                serviceName: 'Corte + Barba Completa',
-                servicePrice: 'R$ 55,00',
-                dateIso: selectedDate.iso,
-                dateDisplay: selectedDate.display,
-                time: '16:30',
-                cutStyle: 'Mid Fade Navalhado',
-                notes: 'Teste de alerta no sistema',
-                createdAt: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-            };
-            bookings.unshift(demoBooking);
-            localStorage.setItem('sb_bookings', JSON.stringify(bookings));
-            triggerBarberAppNotification(demoBooking);
-            renderBarberBookings();
-            renderTimes();
+        // ==========================================
+        // 11. PAINEL DO BARBEIRO: ADICIONAR / EDITAR HORÁRIOS NA PLANILHA
+        // ==========================================
+        function renderBarberTimeSlotsManager() {
+            const container = document.getElementById('barber-timeslots-manager');
+            if (!timeSlots || timeSlots.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-xs text-zinc-500">Nenhum horário cadastrado.</p>`;
+                return;
+            }
+
+            container.innerHTML = timeSlots.map(time => `
+                <div class="flex items-center justify-between bg-obsidian-950 border border-zinc-800 px-3 py-2 rounded-xl">
+                    <span class="text-xs font-extrabold text-white">${time}</span>
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="startEditTimeSlot('${time}')" class="p-1 text-zinc-400 hover:text-amber-400 transition" title="Editar horário">
+                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button type="button" onclick="deleteTimeSlot('${time}')" class="p-1 text-zinc-400 hover:text-red-400 transition" title="Excluir horário">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function startEditTimeSlot(time) {
+            document.getElementById('editing-old-time').value = time;
+            document.getElementById('new-time-slot-input').value = time;
+            document.getElementById('save-time-btn').textContent = 'Salvar Alteração';
+            document.getElementById('cancel-edit-time-btn').classList.remove('hidden');
+            document.getElementById('new-time-slot-input').focus();
+        }
+
+        function cancelEditTimeSlot() {
+            document.getElementById('editing-old-time').value = '';
+            document.getElementById('new-time-slot-input').value = '';
+            document.getElementById('save-time-btn').textContent = 'Adicionar Horário';
+            document.getElementById('cancel-edit-time-btn').classList.add('hidden');
+        }
+
+        async function handleSaveTimeSlot(e) {
+            e.preventDefault();
+            const newTime = document.getElementById('new-time-slot-input').value.trim();
+            const oldTime = document.getElementById('editing-old-time').value.trim();
+            if (!newTime) return;
+
+            const btn = document.getElementById('save-time-btn');
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            const res = await postToGoogleSheets({
+                action: 'saveTimeSlot',
+                time: newTime,
+                oldTime: oldTime || null
+            });
+
+            btn.disabled = false;
+            cancelEditTimeSlot();
+
+            if (res.status === 'ok') {
+                showPushBanner('Horário Salvo!', `O horário ${newTime} já está atualizado na planilha.`);
+                await syncWithGoogleSheets(false);
+            } else {
+                showPushBanner('Erro', res.message || 'Não foi possível salvar o horário.');
+            }
+        }
+
+        async function deleteTimeSlot(time) {
+            const res = await postToGoogleSheets({
+                action: 'deleteTimeSlot',
+                time: time
+            });
+
+            if (res.status === 'ok') {
+                showPushBanner('Horário Removido', `O horário ${time} foi excluído da grade.`);
+                await syncWithGoogleSheets(false);
+            }
         }
 
         // ==========================================
-        // 9. PAINEL DO BARBEIRO (AGENDA E MÍDIA)
+        // 12. PAINEL DO BARBEIRO: AGENDA E MÍDIA
         // ==========================================
         function saveBarberWhatsApp() {
             const val = document.getElementById('barber-whatsapp-input').value.trim();
@@ -900,7 +1232,7 @@
             document.getElementById('bookings-count').textContent = bookings.length;
 
             if (bookings.length === 0) {
-                container.innerHTML = `<p class="text-xs text-zinc-500 text-center py-5">Nenhum horário marcado ainda.</p>`;
+                container.innerHTML = `<p class="text-xs text-zinc-500 text-center py-5">Nenhum horário marcado na planilha ainda.</p>`;
                 return;
             }
 
@@ -916,10 +1248,10 @@
                     <div class="space-y-0.5">
                         <p class="text-sm font-bold text-white break-words">${b.clientName} <span class="text-xs font-normal text-zinc-400">(${b.clientPhone})</span></p>
                         <p class="text-xs text-zinc-300">${b.serviceName} • <span class="text-amber-400">Corte: ${b.cutStyle}</span></p>
-                        ${b.notes !== 'Nenhuma' ? `<p class="text-[11px] text-zinc-400 italic break-words">"${b.notes}"</p>` : ''}
+                        ${b.notes && b.notes !== 'Nenhuma' ? `<p class="text-[11px] text-zinc-400 italic break-words">"${b.notes}"</p>` : ''}
                     </div>
                     <div class="flex items-center justify-end gap-2 pt-1 border-t border-zinc-900">
-                        <a href="https://wa.me/${b.clientPhone.replace(/\D/g, '')}" target="_blank" rel="noopener noreferrer"
+                        <a href="https://wa.me/55${b.clientPhone.replace(/\D/g, '')}" target="_blank" rel="noopener noreferrer"
                             class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
                             <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
                             <span>WhatsApp</span>
@@ -933,18 +1265,20 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        function removeBooking(id) {
-            bookings = bookings.filter(b => b.id !== id);
-            localStorage.setItem('sb_bookings', JSON.stringify(bookings));
-            renderBarberBookings();
-            renderTimes();
+        async function removeBooking(id) {
+            const res = await postToGoogleSheets({ action: 'removeBooking', id });
+            if (res.status === 'ok') {
+                showPushBanner('Agendamento Removido', 'Horário liberado novamente na planilha.');
+                await syncWithGoogleSheets(false);
+            }
         }
 
-        function clearAllBookings() {
-            bookings = [];
-            localStorage.setItem('sb_bookings', JSON.stringify(bookings));
-            renderBarberBookings();
-            renderTimes();
+        async function clearAllBookings() {
+            const res = await postToGoogleSheets({ action: 'clearBookings' });
+            if (res.status === 'ok') {
+                showPushBanner('Agenda Limpa', 'Todos os agendamentos foram removidos da planilha.');
+                await syncWithGoogleSheets(false);
+            }
         }
 
         function previewLocalFileName(input) {
